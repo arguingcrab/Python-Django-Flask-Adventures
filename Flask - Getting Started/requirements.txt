@@ -1,6 +1,7 @@
 click==6.7
 Flask==0.12
 Flask-Admin==1.4.2
+Flask-WTF==0.14.2
 itsdangerous==0.24
 Jinja2==2.9.5
 MarkupSafe==0.23
