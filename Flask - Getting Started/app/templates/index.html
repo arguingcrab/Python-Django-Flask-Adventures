@@ -2,7 +2,6 @@
 {% block content %}
   <h1>Welcome to Flask, {{ user.nickname }}!</h2>
   <br>
-  <p>Click <a href="/">here</a> to go home.</p>
   {% for post in posts %}
     <div><p>{{ post.author.nickname }}: {{ post.body }}</p></div><hr />
   {% endfor %}

@@ -11,6 +11,8 @@
 ```
 (env) $ export FLASK_APP=run.py
 flask run
+# or
+python -m flask run
 
 # or
 
