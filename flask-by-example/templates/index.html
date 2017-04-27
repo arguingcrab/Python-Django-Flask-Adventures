@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html ng-app="WordcountApp">
+  <head>
+    <title></title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link href="//netdna.bootstrapcdn.com/bootstrap/3.3.6/css/bootstrap.min.css" rel="stylesheet" media="screen">
+    <style>
+      .container {
+        max-width: 1000px;
+      }
+      input[type="text"], .table {
+        max-width: 300px;
+      }
+      #chart {
+        overflow-y: scroll;
+      }
+
+      #chart {
+        background: #eee;
+        padding: 3px;
+      }
+
+      #chart div {
+        width: 0;
+        transition: all 1s ease-out;
+        -moz-transition: all 1s ease-out;
+        -webkit-transition: all 1s ease-out;
+      }
+
+      #chart div {
+        height: 30px;
+        font: 15px;
+        background-color: #006dcc;
+        text-align: right;
+        padding: 3px;
+        color: white;
+        box-shadow: 2px 2px 2px gray;
+      }
+    </style>
+  </head>
+  <body ng-controller="WordcountController">
+    <div class="container">
+      <div class="row">
+        <div class="col-sm-5 col-sm-offset-1">
+          <h1></h1>
+          <form role="form" ng-submit="getResults()">
+            <div class="form-group">
+              <input type="text" name="url" class="form-control" id="url-box" placeholder="URL" ng-model="url" autofocus required>
+            </div>
+            {% raw %}
+              <button type="submit" class="btn btn-default" ng-disabled="loading">{{ submitButtonText }}</button>
+            {% endraw %}
+          </form>
+          <br />
+          {% for error in errors %}
+            <h4>{{ error }}</h4>
+          {% endfor %}
+        </div>
+        <div class="col-sm-5 col-sm-offset-1">
+          <h2></h2>
+          <br>
+          <div id="results">
+            <table class="table table-striped">
+              <thead>
+                <tr>
+                  <th>Word</th>
+                  <th>Count</th>
+                </tr>
+              </thead>
+              <tbody>
+              {% raw %}
+                <tr ng-repeat="(key, val) in wordcounts">
+                  <td>{{val[0]}}</td>
+                  <td>{{val[1]}}</td>
+                </tr>
+              {% endraw %}
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+      <br />
+      <word-count-chart data="wordcounts"></word-count-chart>
+    </div>
+    <script src="//d3js.org/d3.v3.min.js" charset="utf-8"></script>
+    <script src="//code.jquery.com/jquery-2.2.1.min.js"></script>
+    <script src="//netdna.bootstrapcdn.com/bootstrap/3.3.6/js/bootstrap.min.js"></script>
+    <script src="//ajax.googleapis.com/ajax/libs/angularjs/1.4.9/angular.min.js"></script>
+    <script src="{{ url_for('static', filename='main.js') }}"></script>
+  </body>
+</html>
