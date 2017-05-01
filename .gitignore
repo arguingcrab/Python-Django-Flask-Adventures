@@ -1,6 +1,7 @@
 ### Dirs
 env/
 **__pycache__/
+instance/
 
 ### Files
 *.pyc
