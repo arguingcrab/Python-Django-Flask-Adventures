@@ -50,6 +50,13 @@ mapper(User, user, properties={
 
 mapper(Address, address)
 
+
+# Classical mapping to existing table
+# mapper(User, user_table, properties={
+#     'id': user_table.c.user_id, 
+#     'name': user_table.c.user_name,
+# })
+
 # Base.metadata.create_all(engine) and possibly restart        
 # User.addresses = relationship("Address", order_by=Address.id, back_populates="user")
 

@@ -1,6 +1,8 @@
 from flask import Flask
 from sqlalchemy import *
 from sqlalchemy.orm import scoped_session, sessionmaker, relationship, backref
+# For column level options
+from sqlalchemy.orm import column_property
 from sqlalchemy.ext.declarative import declarative_base
 
 app = Flask(__name__)
@@ -14,12 +16,25 @@ db_session = scoped_session(sessionmaker(autocommit=False, autoflush=False, bind
 Base = declarative_base()
 Base.query = db_session.query_property()
 
+
+# Naming columns distinctly from attribute names
 class User(Base):
     __tablename__ = 'users'
-    id = Column(Integer, primary_key=True)
-    name = Column(String)
-    fullname = Column(String)
+    id = Column('user_id', Integer, primary_key=True)
+    name = column_property(Column('user_name', String(50)), active_history=True)
+    firstname = Column(String(50))
+    lastname = Column(String(50))
+    fullname = column_property(firstname + " " + lastname)
     password = Column(String)
+    
+    # for existing table:
+    # class User(Base):
+    #     __table__ = user_table
+    #     id = user_table.c.user_id
+    # column_property also used to map single attr to multiple cols
+    # class User(Base):
+    #     __table__ = user.join(address)
+    #     id = column_property(user_table.c.id, address_table.c.user_id)
     
     def __repr__(self):
         return "<User(name= '%s', fullname='%s', password='%s')>" % (
