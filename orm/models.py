@@ -1,8 +1,8 @@
 from flask import Flask
 from sqlalchemy import *
 from sqlalchemy.orm import scoped_session, sessionmaker, relationship, backref
-# For column level options
-from sqlalchemy.orm import column_property
+# For column level options, and validation
+from sqlalchemy.orm import column_property, validates
 from sqlalchemy.ext.declarative import declarative_base
 # SQL exp as mapped attr
 from sqlalchemy.ext.hybrid import hybrid_property
@@ -28,6 +28,23 @@ class User(Base):
     firstname = Column(String(50))
     lastname = Column(String(50))
     password = Column(String)
+    
+    ''' http://docs.sqlalchemy.org/en/latest/orm/mapped_attributes.html#sqlalchemy.orm.validates
+    include_removes = Operation is a removal
+    validation() by default doesn't get emitted for collection events
+    as typical expectation = value being discarded doesn't require validation
+    
+    include_backrefs=False where mutually dependent validators are linked
+    via a backref
+    '''
+    addresses = relationship("Address")
+    @validates('addresses', include_removes=True)
+    def validate_address(self, key, address, is_remove):
+        if is_remove:
+            raise ValueError("Now allowed to remove items from the collection")
+        else:
+            assert '@' in address.email
+            return address
     
     @hybrid_property
     def fullname(self):
@@ -60,11 +77,11 @@ class User(Base):
         
     addresses = relationship("Address", backref="users", order_by="Address.id")
         
-# Relationship
+# Relationship & Descriptors and Hybrids
 class Address(Base):
     __tablename__ = 'addresses'
     id = Column(Integer, primary_key=True)
-    email_address = Column(String, nullable=False)
+    _email_address = Column("email", String, nullable=False)
     user_id = Column(Integer, ForeignKey('users.id'))
     user = relationship(
         User, 
@@ -73,8 +90,40 @@ class Address(Base):
         single_parent=True,
     )
     
+    @hybrid_property
+    def email_address(self):
+        # class level Address.email_address attr doesn't have usual exp semantics with Query
+        # hybrid allows behaviour change - when attr accessed instance lvl or class/expr lvl
+        return self._email_address[:-12]
+        
+    @email_address.setter
+    def email_address(self, email):
+        self._email_address = email + "@example.com"
+        
+    @email_address.expression
+    def email_address(cls):
+        return func.substr(cls._email_address, 0, func.length(cls._email_address) - 12)
+        
+    # address = db_session.query(Address).filter(Address.email_address == 'address').one()
+        
+    @validates('email_address')
+    def validate_email(self, key, address):
+        assert '@' in address
+        return address
+        
     def __repr__(self):
         return "<Address(email_address='%s')>" % self.email_address
+        
+    '''
+    from sqlalchemy.orm import Session
+    session = Session()
+    address = session.query(Address).\
+                    filter(Address.email_address == 'address@exmaple.com').\
+                    one()
+                    
+    address.email_address = 'otheraddr@example.com'
+    session.commit()
+    '''
         
 # Base.metadata.create_all(engine) and possibly restart        
 # User.addresses = relationship("Address", order_by=Address.id, back_populates="user")
