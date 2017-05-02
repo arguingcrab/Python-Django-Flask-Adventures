@@ -1,6 +1,6 @@
 from flask import Flask
 from sqlalchemy import *
-from sqlalchemy.orm import scoped_session, sessionmaker, relationship, backref
+from sqlalchemy.orm import scoped_session, sessionmaker, relationship, backref, mapper
 from sqlalchemy.ext.declarative import declarative_base
 
 app = Flask(__name__)
@@ -14,36 +14,42 @@ db_session = scoped_session(sessionmaker(autocommit=False, autoflush=False, bind
 Base = declarative_base()
 Base.query = db_session.query_property()
 
-class User(Base):
-    __tablename__ = 'users'
-    id = Column(Integer, primary_key=True)
-    name = Column(String)
-    fullname = Column(String)
-    password = Column(String)
-    
-    def __repr__(self):
-        return "<User(name= '%s', fullname='%s', password='%s')>" % (
-            self.name, self.fullname, self.password
-        )
-        
-    addresses = relationship("Address", backref="users", order_by="Address.id")
-        
-# Relationship
-class Address(Base):
-    __tablename__ = 'addresses'
-    id = Column(Integer, primary_key=True)
-    email_address = Column(String, nullable=False)
-    user_id = Column(Integer, ForeignKey('users.id'))
-    user = relationship(
-        User, 
-        back_populates="addresses", 
-        cascade='delete, all, delete-orphan',
-        single_parent=True,
+# Classical Mappings http://docs.sqlalchemy.org/en/latest/orm/mapping_styles.html
+metadata = MetaData()
+
+user = Table('user', metadata,
+        Column('id', Integer, primary_key=True),
+        Column('name', String(50)),
+        Column('fullname', String(50)),
+        Column('password', String(12)),
     )
     
-    def __repr__(self):
-        return "<Address(email_address='%s')>" % self.email_address
+class User(object):
+    def __init__(self, name, fullname, password):
+        self.name = name
+        self.fullname = fullname
+        self.password = password
         
+# mapper(User, user)
+
+class Address(object):
+    def __init__(self, email_address, user_id):
+        self.email_address = email_address
+        self.user_id = user_id
+
+# Relationship
+address = Table('address', metadata, 
+        Column('id', Integer, primary_key=True),
+        Column('user_id', Integer, ForeignKey('user.id')),
+        Column('email_address', String(50)),
+    )
+    
+mapper(User, user, properties={
+    'addresses': relationship(Address, backref='user', order_by=address.c.id)
+})
+
+mapper(Address, address)
+
 # Base.metadata.create_all(engine) and possibly restart        
 # User.addresses = relationship("Address", order_by=Address.id, back_populates="user")
 
