@@ -32,7 +32,12 @@ class Address(Base):
     id = Column(Integer, primary_key=True)
     email_address = Column(String, nullable=False)
     user_id = Column(Integer, ForeignKey('users.id'))
-    user = relationship(User, back_populates="addresses")
+    user = relationship(
+        User, 
+        back_populates="addresses", 
+        cascade='delete, all, delete-orphan',
+        single_parent=True,
+    )
     
     def __repr__(self):
         return "<Address(email_address='%s')>" % self.email_address
@@ -40,6 +45,45 @@ class Address(Base):
 # Base.metadata.create_all(engine) and possibly restart        
 User.addresses = relationship("Address", order_by=Address.id, back_populates="user")
 
+# Many to Many
+post_keywords = Table(
+    'post_keywords', 
+    Base.metadata, 
+    Column('post_id', ForeignKey('posts.id'), primary_key=True), 
+    Column('keyword_id', ForeignKey('keywords.id'), primary_key=True)
+)
+
+class BlogPost(Base):
+    __tablename__ = 'posts'
+    id = Column(Integer, primary_key=True)
+    user_id = Column(Integer, ForeignKey('users.id'))
+    headline = Column(String(255), nullable=False)
+    body = Column(Text)
+    
+    # many to many BlogPost>-<Keyword
+    keywords = relationship('Keyword', secondary=post_keywords, back_populates='posts')
+    
+    def __init__(self, headline, body, author):
+        self.author = author
+        self.headline = headline
+        self.body = body
+        
+    def __repr__(self):
+        return "BlogPost(%r, %r, %r)" % (self.headline, self.body, self.author)
+        
+        
+class Keyword(Base):
+    __tablename__ = 'keywords'
+    id = Column(Integer, primary_key=True)
+    keyword = Column(String(50), nullable=False, unique=True)
+    posts = relationship('BlogPost', secondary=post_keywords, back_populates='keywords')
+    
+    def __init__(self, keyword):
+        self.keyword = keyword
+        
+
+BlogPost.author = relationship(User, back_populates="posts")
+User.posts = relationship(BlogPost, back_populates="author", lazy="dynamic")
 
 if __name__ == "__main__":
     Base.metadata.create_all(engine)
