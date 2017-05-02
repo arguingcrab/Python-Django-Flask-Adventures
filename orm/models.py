@@ -4,6 +4,9 @@ from sqlalchemy.orm import scoped_session, sessionmaker, relationship, backref
 # For column level options
 from sqlalchemy.orm import column_property
 from sqlalchemy.ext.declarative import declarative_base
+# SQL exp as mapped attr
+from sqlalchemy.ext.hybrid import hybrid_property
+from sqlalchemy.sql import case
 
 app = Flask(__name__)
 
@@ -24,8 +27,22 @@ class User(Base):
     name = column_property(Column('user_name', String(50)), active_history=True)
     firstname = Column(String(50))
     lastname = Column(String(50))
-    fullname = column_property(firstname + " " + lastname)
     password = Column(String)
+    
+    @hybrid_property
+    def fullname(self):
+        if self.firstname is not None:
+            return self.firstname + " " + self.lastname
+        else:
+            return self.lastname
+    
+    # distinguishing between sql/python
+    @fullname.expression
+    def fullname(cls):
+        return case([
+            (cls.firstname != None, cls.firstname + " " + cls.lastname),
+        ], else_ = cls.lastname)
+        
     
     # for existing table:
     # class User(Base):
