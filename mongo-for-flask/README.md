@@ -1,0 +1,2 @@
+[http://blog.shea.io/lightweight-python-apps-with-flask-twitter-bootstrap-and-heroku/](http://blog.shea.io/lightweight-python-apps-with-flask-twitter-bootstrap-and-heroku/)
+[http://blog.shea.io/mongodb-for-flask-apps/](http://blog.shea.io/mongodb-for-flask-apps/)
