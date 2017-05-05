@@ -1,0 +1,37 @@
+{% extends "base.html" %}
+{% import "_forms.html" as forms %}
+{% block page_header %}
+  <div class="page-header">{{ post.title }}</div>
+{% endblock %}
+{% block content %}
+  {% if post.body %}
+    {% if post.post_type == "Quote" %}
+      <blockquote>{{ post.body }}</blockquote>
+      <p><small>{{ post.author }}</small></p>
+    {% else %}
+      <p>{{ post.body }}</p>
+    {% endif %}
+  {% endif %}
+  {% if post.embed_code %}
+    {{ post.embed_code|safe() }}
+  {% endif %}
+  {% if post.image_url %}
+    <p><img src="{{ post.image_url }}" /></p>
+  {% endif %}
+  <p><small>{{ post.created_at.strftime('%H:%M %Y-%m-%d') }}</small></p>
+  <hr />
+  {% if post.comments %}
+    {% for comment in post.comments %}
+      <p>{{ comment.body }}</p>
+      <p><small><strong>{{ comment.author }}</strong> @ {{ comment.created_at.strftime('%H:%M %Y-%m-%d') }}</small></p>
+    {% endfor %}
+  {% endif %}
+  <hr />
+  <h4>add a comment</h4>
+  <form action="." method="POST">
+    {{ forms.render(form) }}
+    <div class="action">
+      <input type="submit" class="btn primary" value="comment" />
+    </div>
+  </form>
+{% endblock %}

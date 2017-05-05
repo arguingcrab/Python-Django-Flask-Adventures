@@ -1,0 +1,13 @@
+{% extends "admin/base.html" %}
+{% import "_forms.html" as forms %}
+
+{% block content %}
+  <h3>{% if create %}New{% else %}Edit{% endif %}</h3>
+  <form action="?{{ request.query_string }}" method="POST">
+    {{ forms.render(form) }}
+    <div class="actions">
+      <input type="submit" class="btn primary" value="save" />
+      <a href="{{ url_for('admin.index') }}" class="btn secondary">cancel</a>
+    </div>
+  </form>
+{% endblock %}

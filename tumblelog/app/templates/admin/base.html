@@ -1,0 +1,34 @@
+{% extends "base.html" %}
+{% block navbar %}
+  <style>
+    .ui-menu { width: 150px; }
+  </style>
+  <div class="navbar navbar-static-top navbar-default">
+    <div class="container">
+      <a class="navbar-brand" href="/admin">:) admin</a>
+      <div class="nav-collapse">
+          {% block navbar_right %}
+            <ul id="menu" class="nav navbar-nav pull-right">
+              <li>
+                <div><a href="#" class="menu">new +</a></div>
+                <ul>
+                  {% for type in ('post', 'video', 'image', 'quote') %}
+                    <li><div><a href="{{ url_for('admin.create', type=type) }}">{{ type|title }}</a></div></li>
+                  {% endfor %}
+                </ul>
+              </li>
+            </ul>
+          {% endblock %}
+      </div>
+    </div>
+  </div>
+{% endblock %}
+
+{% block js_footer %}
+  <script src="https://ajax.googleapis.com/ajax/libs/jqueryui/1.12.1/jquery-ui.min.js"></script>
+  <script>
+  $( function() {
+    $( "#menu" ).menu();
+  } );
+  </script>
+{% endblock %}
