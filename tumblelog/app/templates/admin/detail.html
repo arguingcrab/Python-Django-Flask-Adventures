@@ -2,8 +2,15 @@
 {% import "_forms.html" as forms %}
 
 {% block content %}
+  {% with messages = get_flashed_messages() %}
+    {% if messages %}
+      {% for message in messages %}
+        <p>{{ message }}</p>
+      {% endfor %}
+    {% endif %}
+  {% endwith %}
   <h3>{% if create %}New{% else %}Edit{% endif %}</h3>
-  <form action="?{{ request.query_string }}" method="POST">
+  <form action="?type={{ request.args.get('type') }}" method="POST">
     {{ forms.render(form) }}
     <div class="actions">
       <input type="submit" class="btn primary" value="save" />
