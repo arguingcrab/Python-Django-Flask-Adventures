@@ -1,6 +1,7 @@
-from flask import Blueprint, request, redirect, render_template, url_for
+from flask import Blueprint, request, redirect, render_template, url_for, flash
 from flask.views import MethodView
 from flask_mongoengine.wtf import model_form
+from mongoengine import ValidationError
 from .auth import requires_auth
 from .models import Post, Comment, BlogPost, Video, Image, Quote
 
@@ -25,14 +26,12 @@ class Detail(MethodView):
     }
     
     def get_context(self, slug=None):
-        # form_cls = model_form(Post, exclude=('created_at', 'comments'))
-        
         if slug:
             post = Post.objects.get_or_404(slug=slug)
             # handle old posts also
             cls = post.__class__ if post.__class__ != Post else BlogPost
             form_cls = model_form(cls, exclude=('created_at', 'comments'))
-            if request.method == 'POSt':
+            if request.method == 'POST':
                 form = form_cls(request.form, initial=post._data)
             else:
                 form = form_cls(obj=post)
@@ -62,9 +61,11 @@ class Detail(MethodView):
         if form.validate():
             post = context.get('post')
             form.populate_obj(post)
-            post.save()
-            
-            return redirect(url_for('admin.index'))
+            try:
+                post.save()
+                return redirect(url_for('admin.index'))
+            except ValidationError:
+                flash(":(")
         return render_template('admin/detail.html', **context)
 
 

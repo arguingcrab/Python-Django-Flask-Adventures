@@ -1,6 +1,7 @@
-from flask import Blueprint, request, redirect, render_template, url_for
+from flask import Blueprint, request, redirect, render_template, url_for, flash
 from flask.views import MethodView
 from flask_mongoengine.wtf import model_form
+from mongoengine import ValidationError
 from .models import Post, Comment, BlogPost, Video, Image, Quote
 
 posts = Blueprint('posts', __name__, template_folder='templates')
@@ -9,6 +10,7 @@ class ListView(MethodView):
     def get(self):
         posts = Post.objects.all()
         return render_template('posts/list.html', posts=posts)
+        
         
 class DetailView(MethodView):
     # modified to handle form
@@ -42,10 +44,11 @@ class DetailView(MethodView):
             
             post = context.get('post')
             post.comments.append(comment)
-            post.save()
-            
-            return redirect(url_for('posts.detail', slug=slug))
-            
+            try:
+                post.save()
+                return redirect(url_for('posts.detail', slug=slug))
+            except ValidationError:
+                flash(":(")
         return render_template('post/detail.html', **context)
         
 
