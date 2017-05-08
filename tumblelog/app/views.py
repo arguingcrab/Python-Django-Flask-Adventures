@@ -50,7 +50,7 @@ class DetailView(MethodView):
             except ValidationError:
                 flash(":(")
         return render_template('post/detail.html', **context)
-        
+
 
 # register urls
 posts.add_url_rule('/', view_func=ListView.as_view('list'))

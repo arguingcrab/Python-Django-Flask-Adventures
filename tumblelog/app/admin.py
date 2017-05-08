@@ -2,6 +2,7 @@ from flask import Blueprint, request, redirect, render_template, url_for, flash
 from flask.views import MethodView
 from flask_mongoengine.wtf import model_form
 from mongoengine import ValidationError
+from mongoengine.errors import NotUniqueError
 from .auth import requires_auth
 from .models import Post, Comment, BlogPost, Video, Image, Quote
 
@@ -38,7 +39,6 @@ class Detail(MethodView):
         else:
             cls = self.class_map.get(request.args.get('type', 'post'))
             post = cls()
-            # post = Post()
             form_cls = model_form(cls, exclude=('created_at', 'comments'))
             form = form_cls(request.form)
             
@@ -64,8 +64,14 @@ class Detail(MethodView):
             try:
                 post.save()
                 return redirect(url_for('admin.index'))
-            except ValidationError:
-                flash(":(")
+            except ValidationError as e:
+                for v in reversed(sorted(e.errors.values())):
+                    flash("%s" % (str(v[0])))
+            except NotUniqueError as n:
+                unique = ['slug', 'title']
+                for word in unique:
+                    if word in str(n):
+                        flash("Duplicate entry: %s already exists" % (word.title()))
         return render_template('admin/detail.html', **context)
 
 

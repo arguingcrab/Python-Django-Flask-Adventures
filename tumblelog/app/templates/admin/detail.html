@@ -4,9 +4,11 @@
 {% block content %}
   {% with messages = get_flashed_messages() %}
     {% if messages %}
-      {% for message in messages %}
-        <p>{{ message }}</p>
-      {% endfor %}
+      <div class="messages">
+        {% for message in messages %}
+          <p>{{ message }}</p>
+        {% endfor %}
+      </div>
     {% endif %}
   {% endwith %}
   <h3>{% if create %}New{% else %}Edit{% endif %}</h3>

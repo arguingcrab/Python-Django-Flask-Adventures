@@ -2,6 +2,11 @@
 
 [https://github.com/danilobellini/docs-mongodb/blob/master/source/tutorial/write-a-tumblelog-application-with-flask-mongoengine.txt](https://github.com/danilobellini/docs-mongodb/blob/master/source/tutorial/write-a-tumblelog-application-with-flask-mongoengine.txt)
 
+using mLab 
+[https://mlab.com](https://mlab.com)
+
+validation with 
+[http://docs.python-cerberus.org/en/stable/index.html](http://docs.python-cerberus.org/en/stable/index.html)
 
 ### commands and console
 `python manage.py runserver`

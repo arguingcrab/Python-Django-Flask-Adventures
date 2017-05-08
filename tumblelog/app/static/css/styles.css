@@ -1,0 +1,16 @@
+body {
+  padding: 20px;
+}
+
+.messages {
+  padding: 5px;
+  background-color: #ffffee;
+}
+
+form fieldset {
+  border: 0px;
+}
+
+form textarea {
+  height: auto;
+}

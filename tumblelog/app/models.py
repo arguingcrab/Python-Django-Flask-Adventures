@@ -3,8 +3,11 @@ import mmap
 from datetime import datetime
 from mongoengine import signals, ValidationError
 from flask import url_for, render_template, flash
+from cerberus import Validator
 from app import db, app
-from app.b import stops
+from .b import stops
+from .signals import post_pre_save
+from .validators import MyValidator
 
 def handler(e):
     def decorator(f):
@@ -23,8 +26,8 @@ class Comment(db.EmbeddedDocument):
 
 class Post(db.DynamicDocument):
     created_at = db.DateTimeField(default=datetime.now, required=True)
-    title = db.StringField(max_length=255, required=True)
-    slug = db.StringField(max_length=255, required=True)
+    title = db.StringField(max_length=255, required=True, unique=True)
+    slug = db.StringField(max_length=255, required=True, unique=True)
     comments = db.ListField(db.EmbeddedDocumentField('Comment'))
 
     def get_absolute_url(self):
@@ -46,12 +49,39 @@ class Post(db.DynamicDocument):
                 error = x.lower()
         return error
     
+    # def __init__(self, settings):
+    #     self.settings = settings[self.__class__]
+    # def get_post_content(self):
+    #     post_content = None
+        
     def save(self, *args, **kwargs):
-        error = Post.pre_save(self.__class__, document=self)
-        if error is None:
+        # print(Post().post_type)
+        # print(self.post_type)
+        # def clean(self):
+        schema = {
+            'title': {'filter_words': self.title, 'anyof_type': ['string', 'integer']},
+            'slug': {'filter_words': self.slug, 'anyof_type': ['string', 'integer']},
+            'embed_code': {'anyof_type': ['string', 'integer'], 'empty': True},
+            'image_url': {'anyof_type': ['string', 'integer'], 'empty': True},
+        }
+        
+        document = {'title': self.title, 'slug': self.slug}
+        if hasattr(self, 'body'):
+            document['body'] = self.body
+            schema['body'] = {'filter_words': self.body, 'anyof_type': ['string', 'integer'], 'empty': True}
+        if hasattr(self, 'embed_code'):
+            document['embed_code'] = self.embed_code
+        if hasattr(self, 'image_url'):
+            document['image_url'] = self.image_url
+        if hasattr(self, 'author'):
+            document['author'] = self.author
+            schema['author'] = {'filter_words': self.author, 'anyof_type': ['string', 'integer'], 'empty': True}
+            
+        v = MyValidator(schema)
+        if v.validate(document):
             return super(Post, self).save(*args, **kwargs)
         else:
-            raise ValidationError("ValidationError", errors=error)
+            raise ValidationError("ValidationError", errors=v.errors)
             
     meta = {
         'allow_inheritance': True,

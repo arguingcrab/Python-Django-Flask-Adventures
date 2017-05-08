@@ -6,17 +6,17 @@
   <div class="navbar navbar-static-top navbar-default">
     <div class="container">
       <a class="navbar-brand" href="/admin">:) admin</a>
-      <div class="nav-collapse">
+      <div class="nav-collapse fixed-action-btn horizontal">
           {% block navbar_right %}
-            <ul id="menu" class="nav navbar-nav pull-right">
-              <li>
-                <div><a href="#" class="menu">new +</a></div>
-                <ul>
-                  {% for type in ('post', 'video', 'image', 'quote') %}
-                    <li><div><a href="{{ url_for('admin.create', type=type) }}">{{ type|title }}</a></div></li>
-                  {% endfor %}
-                </ul>
-              </li>
+            <!-- <a class="menu dropdown-button btn" data-activates="menu" data-beloworigin="true" data-hover="True">new +</a> -->
+            <a class="menu dropdown-button btn btn-floating btn-large red"><i class="large material-icons">add</i></a>
+            <!-- <ul id="menu" class="nav navbar-nav pull-right dropdown-content"> -->
+            <ul>
+              {% set type=('post', 'video', 'image', 'quote') %}
+              {% set color=('red darken-1', 'yellow darken-1', 'green darken-1', 'blue') %}
+              {% for icon in ('note_add', 'video_library', 'image', 'format_quote') %}
+                <li><a class="btn-floating {{color[loop.index0]}}" href="{{ url_for('admin.create', type=type[loop.index0]) }}"><i class="material-icons">{{ icon }}</i></a></li>
+              {% endfor %}
             </ul>
           {% endblock %}
       </div>
@@ -25,10 +25,10 @@
 {% endblock %}
 
 {% block js_footer %}
-  <script src="https://ajax.googleapis.com/ajax/libs/jqueryui/1.12.1/jquery-ui.min.js"></script>
+  <!-- <script src="https://ajax.googleapis.com/ajax/libs/jqueryui/1.12.1/jquery-ui.min.js"></script>
   <script>
   $( function() {
     $( "#menu" ).menu();
   } );
-  </script>
+  </script> -->
 {% endblock %}

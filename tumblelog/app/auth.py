@@ -12,7 +12,8 @@ def authenticate():
         ':( Bad credentials', 401, {'WWW-Authenticate': 'Basic realm="Login Required"'}
     )
     
-# create a requires_auth decorator for basic auth    
+    
+# create a requires_auth decorator for basic auth
 def requires_auth(f):
     @wraps(f)
     def decorated(*args, **kwargs):
