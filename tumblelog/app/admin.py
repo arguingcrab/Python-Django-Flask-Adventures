@@ -1,13 +1,16 @@
 from flask import Blueprint, request, redirect, render_template, url_for, flash
 from flask.views import MethodView
 from flask_mongoengine.wtf import model_form
+from flask_login import login_required, current_user
 from mongoengine import ValidationError
 from mongoengine.errors import NotUniqueError
+from app import login_manager
 from .auth import requires_auth
 from .models import Post, Comment, BlogPost, Video, Image, Quote
 
 admin = Blueprint('admin', __name__, template_folder='templates')
 
+# @login_required
 class List(MethodView):
     decorators = [requires_auth]
     cls = Post
@@ -16,7 +19,7 @@ class List(MethodView):
         posts = self.cls.objects.all()
         return render_template('admin/list.html', posts=posts)
         
-        
+
 class Detail(MethodView):
     decorators = [requires_auth]
     class_map = {

@@ -3,20 +3,14 @@ import mmap
 from datetime import datetime
 from mongoengine import signals, ValidationError
 from flask import url_for, render_template, flash
+from flask_login import UserMixin
 from cerberus import Validator
-from app import db, app
+from werkzeug.security import check_password_hash
+from app import db, app, login_manager
 from .b import stops
 from .signals import post_pre_save
 from .validators import MyValidator
 
-def handler(e):
-    def decorator(f):
-        def apply(cls):
-            e.connect(f, sender=cls)
-            return cls
-        f.apply = apply
-        return f
-    return decorator
 
 class Comment(db.EmbeddedDocument):
     created_at = db.DateTimeField(default=datetime.now, required=True)
@@ -107,4 +101,47 @@ class Quote(Post):
     author = db.StringField(verbose_name="Author Name", max_length=255, required=True)
 
 
+# class User(UserMixin):
+class User(db.Document):
+    username = db.StringField(required=True)
+    password = db.StringField(required=True)
+    active = db.StringField(max_length=20)
+    created_at = db.DateTimeField(default=datetime.now, required=True)
+    
+    # def __init__(self, username, active=True):
+    #     self.username = username
+    #     self.active = active
+        
+    def is_authenticated(self):
+        return True
+        
+    def is_active(self):
+        return self.active
+        
+    def is_anonymous(self):
+        return False
+        
+    def get_id(self):
+        return self.username
+        
+    @staticmethod
+    def validate_login(password_hash, password):
+        # print(password_hash, password)
+        return password_hash == password
+        # return check_password_hash(password_hash, password)
+        
+# ? where do i put this...
+@login_manager.user_loader
+def load_user(username):
+    # u = app.config['USERS_COLLECTION'].find_one({'_id': username})
+    # u = DBUsers.query.get(username)
+    u = User.objects(username=username)
+    # print(u._document.__dict__)
+    # cls.objects(username=form.username.data)
+    # if not u:
+    #     return None
+    return User(u._document.username,u._document.active)
+    # return User(u.name,u.id,u.active)
+    # return User(u['_id'])
+        
 signals.pre_save.connect(Post.pre_save, sender=Post)

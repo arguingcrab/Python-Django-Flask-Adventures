@@ -1,6 +1,15 @@
 {% extends "admin/base.html" %}
 
 {% block content %}
+  {% with messages = get_flashed_messages() %}
+    {% if messages %}
+      <div class="messages">
+        {% for message in messages %}
+          <p>{{ message }}</p>
+        {% endfor %}
+      </div>
+    {% endif %}
+  {% endwith %}
   <table class="condensed-table zebra-striped">
     <thead>
       <th>Title</th>

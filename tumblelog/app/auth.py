@@ -1,5 +1,6 @@
 from functools import wraps
-from flask import request, Response
+from flask import request, Response, redirect, url_for
+from flask_login import current_user
 
 def check_auth(username, password):
     # check if username + password combination is valid
@@ -17,8 +18,10 @@ def authenticate():
 def requires_auth(f):
     @wraps(f)
     def decorated(*args, **kwargs):
-        auth = request.authorization
-        if not auth or not check_auth(auth.username, auth.password):
-            return authenticate()
+        # auth = request.authorization
+        # if not auth or not check_auth(auth.username, auth.password):
+        #     return authenticate()
+        if not current_user.is_authenticated:
+            return redirect(url_for('login'))
         return f(*args, **kwargs)
     return decorated
