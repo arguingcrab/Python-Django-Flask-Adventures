@@ -16,23 +16,27 @@
           {{ form.hidden_tag() }}
           <div class="form-group">
               <label class="control-label" for="username">Username</label>
-              <p id="username" name="username" type="text">{{ current_user.username }}</p>
-              {{ form.username.errors|join(' ') }}
+              <p>{{ view_user_name.username if view_user_name else current_user.username }}</p>
           </div>
           <div class="form-group">
-              <label class="control-label" for="username">Email</label>
-              <input id="email" name="email" type="text" value="{{ current_user.email }}">
-              {{ form.email.errors|join(' ') }}
-          </div>
-          <div class="form-group">
-              <label class="control-label" for="password">Password</label>
-              <input id="password" name="password" type="password" value="">
-              <label class="control-label" for="password2">Verify Password</label>
-              <input id="password2" name="password2" type="password" value="">
-              {{ form.password.errors|join(' ') }}
-          </div>
-          <input type="submit" class="btn primary" value="save" />
-          <a href="{{ url_for('admin.index') }}" class="btn secondary">cancel</a>
+            <label class="control-label" for="username">Email</label>
+            {% if view_user_name and view_user_name.username != current_user.username %}
+              <p>{{ view_user_name.email }}</p>
+              </div>
+            {% else %}
+                <input id="email" name="email" type="text" value="{{ current_user.email }}">
+                {{ form.email.errors|join(' ') }}
+              </div>
+              <div class="form-group">
+                  <label class="control-label" for="password">Password</label>
+                  <input id="password" name="password" type="password" value="">
+                  <label class="control-label" for="password2">New Password</label>
+                  <input id="password2" name="password2" type="password" value="">
+                  {{ form.password.errors|join(' ') }}
+              </div>
+              <input type="submit" class="btn primary" value="save" />
+              <a href="{{ url_for('admin.index') }}" class="btn secondary">cancel</a>
+            {% endif %}
       </div>
   </form>
 {% endblock %}

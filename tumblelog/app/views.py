@@ -126,8 +126,8 @@ def register():
             user = User(form.username.data, form.email.data, generate_password_hash(form.password.data))
             user.save()
             
-            user_obj = User(user.username)
-            login_user(user_obj)
+            # user_obj = User(user.username)
+            # login_user(user_obj)
             flash("Registered successfully", category='success')
             return redirect(request.args.get("next") or url_for("login"))
             # user_obj = User()

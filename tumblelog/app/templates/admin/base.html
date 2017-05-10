@@ -9,7 +9,7 @@
         <div class="blue-grey darken-4 nav-wrapper">
           <a href="{{ url_for('admin.index') }}" class="brand-logo">:) admin</a>
           <ul id="nav-mobile" class="right hide-on-med-and-down">
-            <li><a href="{{ url_for('profile') }}">Profile</a></li>
+            <li><a href="{{ url_for('profile', user_name=current_user.username) }}">Profile</a></li>
             <li><a href="{{ url_for('logout') }}">Logout</a></li>
           </ul>
         </div>

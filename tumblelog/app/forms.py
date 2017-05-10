@@ -19,7 +19,7 @@ class RegisterForm(Form):
 class UserForm(Form):  
     """Login form to access writing and settings pages"""
 
-    username = StringField('Username', validators=[DataRequired()])
+    # username = StringField('Username', validators=[DataRequired()])
     email = StringField('Email', validators=[DataRequired()])
-    password = PasswordField('Password', validators=[DataRequired()])
-    password2 = PasswordField('Verify Password', validators=[DataRequired()])
+    password = PasswordField('Password')
+    password2 = PasswordField('New Password')

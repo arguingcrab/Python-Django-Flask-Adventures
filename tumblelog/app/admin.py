@@ -4,6 +4,7 @@ from flask_mongoengine.wtf import model_form
 from flask_login import login_required, current_user
 from mongoengine import ValidationError
 from mongoengine.errors import NotUniqueError
+from werkzeug.security import generate_password_hash
 from app import app, login_manager
 from .auth import requires_auth
 from .forms import UserForm
@@ -82,18 +83,34 @@ class Detail(MethodView):
                         flash("Duplicate entry: %s already exists" % (word.title()))
         return render_template('admin/detail.html', **context)
 
-
-
-@app.route('/user/', methods=['GET', 'POST'])
-def profile_redirect():
-    return redirect(url_for('admin.index'))
     
     
+@app.route('/user/', defaults={'user_name': ''}, methods=['GET', 'POST'])
 @app.route('/user/<user_name>', methods=['GET', 'POST'])
 @requires_auth
 def profile(user_name):
     cls = User
-    print(repr(current_user.get_id()))
+    # view_user_name = current_user
+    if not user_name:
+        user_name = current_user.username
+    view_user_name = cls.objects.get(username=user_name)
+    
+    form = UserForm()
+    if request.method == 'POST' and form.validate_on_submit():
+        if current_user.username == view_user_name.username:
+            view_user_name.email = form.email.data
+            
+            print(view_user_name.email , form.email.data)
+            if User.validate_login(view_user_name.password, form.password.data) \
+                    and not User.validate_login(view_user_name.password, form.password2.data):
+                view_user_name.password = generate_password_hash(form.password2.data)
+            
+            cls.objects(username=user_name).update_one(set__email=view_user_name.email,set__password=view_user_name.password)
+            
+            # , upsert=True
+            # view_user_name.save()
+            flash("Profile successfully changed")
+            return redirect(url_for('profile'))
     # current_user_info = {k:current_user for k in current_user}
     # print(current_user_info['username'])
     # for n in current_user:
@@ -103,8 +120,7 @@ def profile(user_name):
         
         # current_username = n['username']
         # current_email = n['email']
-    form = UserForm()
-    return render_template('admin/edit_user.html', title='register', form=form, current_user=current_user)
+    return render_template('admin/edit_user.html', title='register', form=form, current_user=current_user, view_user_name=view_user_name)
 
 
 # register urls
