@@ -4,7 +4,7 @@
     <p><a href="{{ url_for('posts.detail', slug=post.slug) }}">{{ post.title }}</a></p>
     {% if post.body %}
       {% if post.post_type == "Quote" %}
-        <blockquote>{{ post.body|truncate(50) }}</blockquote>
+        <blockquote>{{ post.body|truncate(50) }}<br /><small>&mdash; {{ post.author }}</small></blockquote>
       {% else %}
         <p>{{ post.body|truncate(50) }}</p>
       {% endif %}
@@ -13,7 +13,7 @@
       {{ post.embed_code|safe() }}
     {% endif %}
     {% if post.image_url %}
-      <p><img src="{{ post.image_url }}" /></p>
+      <p><img class="materialboxed" width="250" src="{{ post.image_url }}" /></p>
     {% endif %}
     <p><small>
       {{ post.created_at.strftime('%H:%M %Y-%m-%d') }}&nbsp;|&nbsp;
@@ -22,4 +22,12 @@
       {% endwith %}
     </small></p>
   {% endfor %}
+{% endblock %}
+
+{% block js_footer %}
+<script>
+  $(document).ready(function(){
+      $('.materialboxed').materialbox();
+    });
+</script>
 {% endblock %}

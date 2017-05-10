@@ -22,7 +22,10 @@
           <tr>
             <th class="center"><a href="{{ url_for('admin.edit', slug=post.slug) }}">{{ post.title }}</a></th>
             <td class="center">{{ post.created_at.strftime('%Y-%m-%d') }}</td>
-            <td class="center"><a href="{{ url_for('admin.edit', slug=post.slug) }}" class="btn primary"><i class="large material-icons">mode_edit</i></a></td>
+            <td class="center">
+              <a href="{{ url_for('admin.edit', slug=post.slug) }}" class="btn primary"><i class="large material-icons">mode_edit</i></a>
+              <a target="_blank" href="{{ url_for('posts.detail', slug=post.slug) }}" class="btn primary"><i class="large material-icons">visibility</i></a>
+            </td>
           </tr>
         {% endfor %}
       {% else %}

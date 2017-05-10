@@ -23,7 +23,7 @@ class List(MethodView):
     
     def get(self):
         posts = self.cls.objects.all()
-        return render_template('admin/list.html', posts=posts)
+        return render_template('admin/list.html', posts=posts)      
         
 
 class Detail(MethodView):
@@ -96,21 +96,19 @@ def profile(user_name):
     view_user_name = cls.objects.get(username=user_name)
     
     form = UserForm()
-    if request.method == 'POST' and form.validate_on_submit():
-        if current_user.username == view_user_name.username:
-            view_user_name.email = form.email.data
-            
-            print(view_user_name.email , form.email.data)
+    # if request.method == 'POST' and form.validate_on_submit():
+    if request.method == 'POST':
+        if current_user.username == view_user_name.username or current_user.status == 'admin':
             if User.validate_login(view_user_name.password, form.password.data) \
                     and not User.validate_login(view_user_name.password, form.password2.data):
                 view_user_name.password = generate_password_hash(form.password2.data)
             
-            cls.objects(username=user_name).update_one(set__email=view_user_name.email,set__password=view_user_name.password)
+            cls.objects(username=user_name).update_one(set__email=form.email.data,set__password=view_user_name.password, set__active=form.active.data)
             
             # , upsert=True
             # view_user_name.save()
             flash("Profile successfully changed")
-            return redirect(url_for('profile'))
+            return redirect(url_for('profile', user_name = view_user_name.username))
     # current_user_info = {k:current_user for k in current_user}
     # print(current_user_info['username'])
     # for n in current_user:
@@ -122,6 +120,13 @@ def profile(user_name):
         # current_email = n['email']
     return render_template('admin/edit_user.html', title='register', form=form, current_user=current_user, view_user_name=view_user_name)
 
+
+@app.route('/users/', methods=['GET', 'POST'])
+@requires_auth
+def list_users():
+        cls = User
+        users = cls.objects.all()
+        return render_template('admin/user-list.html', users=users)  
 
 # register urls
 admin.add_url_rule('/admin/', view_func=List.as_view('index'))

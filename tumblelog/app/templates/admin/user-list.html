@@ -1,0 +1,33 @@
+{% extends "admin/base.html" %}
+
+{% block content %}
+  {% with messages = get_flashed_messages() %}
+    {% if messages %}
+      <div class="messages">
+        {% for message in messages %}
+          <p>{{ message }}</p>
+        {% endfor %}
+      </div>
+    {% endif %}
+  {% endwith %}
+  <table class="condensed-table zebra-striped">
+    <thead>
+      <th class="center">Users</th>
+      <th class="center">Joined</th>
+      <th class="center">Active</th>
+    </thead>
+    <tbody>
+      {% if users %}
+        {% for user in users %}
+          <tr>
+            <th class="center"><a href="{{ url_for('profile', user_name=user.username) }}">{{ user.username }}</a></th>
+            <td class="center">{{ user.created_at.strftime('%Y-%m-%d') }}</td>
+            <td class="center">{{ user.active }}</td>
+          </tr>
+        {% endfor %}
+      {% else %}
+        <tr><th colspan="3" class="center">no users to display</th></tr>
+      {% endif %}
+    </tbody>
+  </table>
+{% endblock %}

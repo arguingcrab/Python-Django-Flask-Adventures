@@ -74,36 +74,16 @@ def login():
         # print(form.username.data)
         # .where(User.username == form.username.data))
         try:
-            user = cls.objects(username=form.username.data)
+            user = cls.objects.get(username=form.username.data)
         except:
             user=None
-        for u in user:
-            pass
-        #     print(u.__dict__)
-        # print(">>",user.__dict__)
-        # ?
-        user_password = None
-        user_username = None
-        try:
-            for x in user._result_cache:
-                user_password = x['password']
-                user_username = x['username']
-                # print(x['password'])
-            # print(user_password)
-        except:
-            pass
-        # print(">>>",user_password)
-        # print(">",user._result_cache)
-        # print(user_password)
-        # print(user._result_cache)
-        # print(form.password.data)
-        # user = app.config['USERS_COLLECTION'].find_one({"_id": form.username.data})
-        if user and User.validate_login(user_password, form.password.data):
+        if user and User.validate_login(user.password, form.password.data):
             # user_obj = User(user['_id'])
-            user_obj = User(user_username)
-            login_user(user_obj)
-            flash("Logged in successfully", category='success')
-            return redirect(request.args.get("next") or url_for("admin.index"))
+            user_obj = User(user.username)
+            if user.active:
+                login_user(user_obj)
+                flash("Logged in successfully", category='success')
+                return redirect(request.args.get("next") or url_for("admin.index"))
         flash("Invalid username or password", category='error')
     return render_template('login.html', title='login', form=form)
     
@@ -123,7 +103,7 @@ def register():
     #     return render_template('register.html')
     if request.method == 'POST' and form.validate_on_submit():
         try:
-            user = User(form.username.data, form.email.data, generate_password_hash(form.password.data))
+            user = User(form.username.data, form.email.data, generate_password_hash(form.password.data), active=False)
             user.save()
             
             # user_obj = User(user.username)

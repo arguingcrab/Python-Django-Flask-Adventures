@@ -22,7 +22,6 @@
             <label class="control-label" for="username">Email</label>
             {% if view_user_name and view_user_name.username != current_user.username %}
               <p>{{ view_user_name.email }}</p>
-              </div>
             {% else %}
                 <input id="email" name="email" type="text" value="{{ current_user.email }}">
                 {{ form.email.errors|join(' ') }}
@@ -33,7 +32,17 @@
                   <label class="control-label" for="password2">New Password</label>
                   <input id="password2" name="password2" type="password" value="">
                   {{ form.password.errors|join(' ') }}
+            {% endif %}
+          </div>
+            {% if current_user.status == 'admin' %}
+              <div class="form-group">
+                  <!-- <input type="checkbox" class="filled-in" id="filled-in-box" checked="checked" />{{ form.active(checked=view_user_name.active) }}
+                  <label class="control-label" for="filled-in">Active</label> -->
+                  <input type="checkbox" class="filled-in" id="filled-in-box" name="active" {{'checked="checked"' if view_user_name.active else ''}} />
+                  <label for="filled-in-box">Active</label>
               </div>
+            {% endif %}
+            {% if view_user_name.username == current_user.username or current_user.status == 'admin' %}
               <input type="submit" class="btn primary" value="save" />
               <a href="{{ url_for('admin.index') }}" class="btn secondary">cancel</a>
             {% endif %}

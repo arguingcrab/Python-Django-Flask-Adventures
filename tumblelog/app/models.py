@@ -106,7 +106,8 @@ class User(db.Document):
     username = db.StringField(required=True, unique=True)
     email = db.StringField(max_length=255, required=True, unique=True)
     password = db.StringField(required=True)
-    active = db.StringField(max_length=20)
+    status = db.StringField(required=True, default='normal')
+    active = db.BooleanField(default=False)
     created_at = db.DateTimeField(default=datetime.now, required=True)
     
     # def __init__(self, username, email, active, *args, **kwargs):
@@ -126,10 +127,13 @@ class User(db.Document):
     def is_anonymous(self):
         return False
         
+    def get_status(self):
+        return self.status
+        
     def get_id(self):
         return self.username
         
-    def __repr(self):
+    def __repr__(self):
         return self.username
         
     @staticmethod
@@ -149,7 +153,7 @@ def load_user(username):
     # if not u:
     #     return None
     # return User.get()
-    return User(u.username, u.email, u.password, u.active)
+    return User(u.username, u.email, u.password, u.status, u.active)
     # return User(u.name,u.id,u.active)
     # return User(u['_id'])
         

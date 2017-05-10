@@ -16,7 +16,7 @@
     {{ post.embed_code|safe() }}
   {% endif %}
   {% if post.image_url %}
-    <p><img src="{{ post.image_url }}" /></p>
+    <p><img class="materialboxed" width="250" src="{{ post.image_url }}" /></p>
   {% endif %}
   <p><small>{{ post.created_at.strftime('%H:%M %Y-%m-%d') }}</small></p>
   <hr />
@@ -34,4 +34,12 @@
       <input type="submit" class="btn primary" value="comment" />
     </div>
   </form>
+{% endblock %}
+
+{% block js_footer %}
+<script>
+  $(document).ready(function(){
+      $('.materialboxed').materialbox();
+    });
+</script>
 {% endblock %}
