@@ -5,7 +5,7 @@ from mongoengine import signals, ValidationError
 from flask import url_for, render_template, flash
 from flask_login import UserMixin
 from cerberus import Validator
-from werkzeug.security import check_password_hash
+from werkzeug.security import check_password_hash, generate_password_hash
 from app import db, app, login_manager
 from .b import stops
 from .signals import post_pre_save
@@ -103,14 +103,19 @@ class Quote(Post):
 
 # class User(UserMixin):
 class User(db.Document):
-    username = db.StringField(required=True)
+    username = db.StringField(required=True, unique=True)
+    email = db.StringField(max_length=255, required=True, unique=True)
     password = db.StringField(required=True)
     active = db.StringField(max_length=20)
     created_at = db.DateTimeField(default=datetime.now, required=True)
     
-    # def __init__(self, username, active=True):
+    # def __init__(self, username, email, active, *args, **kwargs):
+    #     super(db.Document, self).__init__(*args, **kwargs)
     #     self.username = username
-    #     self.active = active
+    #     self.email = email
+        # self.email = username
+        # self.password = username
+        # self.active = username
         
     def is_authenticated(self):
         return True
@@ -124,23 +129,27 @@ class User(db.Document):
     def get_id(self):
         return self.username
         
+    def __repr(self):
+        return self.username
+        
     @staticmethod
     def validate_login(password_hash, password):
         # print(password_hash, password)
-        return password_hash == password
-        # return check_password_hash(password_hash, password)
+        # return password_hash == password
+        return check_password_hash(password_hash, password)
         
 # ? where do i put this...
 @login_manager.user_loader
 def load_user(username):
     # u = app.config['USERS_COLLECTION'].find_one({'_id': username})
     # u = DBUsers.query.get(username)
-    u = User.objects(username=username)
-    # print(u._document.__dict__)
+    u = User.objects(username=username).first()
+    # print(">>>",u.username)
     # cls.objects(username=form.username.data)
     # if not u:
     #     return None
-    return User(u._document.username,u._document.active)
+    # return User.get()
+    return User(u.username, u.email, u.password, u.active)
     # return User(u.name,u.id,u.active)
     # return User(u['_id'])
         

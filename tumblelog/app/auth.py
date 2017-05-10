@@ -25,3 +25,11 @@ def requires_auth(f):
             return redirect(url_for('login'))
         return f(*args, **kwargs)
     return decorated
+    
+def redirect_auth(f):
+    @wraps(f)
+    def decorated(*args, **kwargs):
+        if current_user.is_authenticated:
+            return redirect(url_for('admin.index'))
+        return f(*args, **kwargs)
+    return decorated

@@ -3,9 +3,17 @@ from flask.views import MethodView
 from flask_mongoengine.wtf import model_form
 from flask_login import login_user, logout_user
 from mongoengine import ValidationError
+from mongoengine.errors import NotUniqueError
+from pymongo.errors import DuplicateKeyError
+from werkzeug.security import generate_password_hash
 from app import app, db
-from .forms import LoginForm
+from .auth import redirect_auth, requires_auth
+from .forms import LoginForm, RegisterForm
 from .models import Post, Comment, BlogPost, Video, Image, Quote, User
+
+'''
+views/functions that don't require login
+'''
 
 posts = Blueprint('posts', __name__, template_folder='templates')
 
@@ -56,7 +64,8 @@ class DetailView(MethodView):
 
 
 @app.route('/login/', methods=['GET', 'POST'])
-def login():  
+@redirect_auth
+def login():
     cls = User
     form = LoginForm()
     if request.method == 'POST' and form.validate_on_submit():
@@ -95,14 +104,47 @@ def login():
             login_user(user_obj)
             flash("Logged in successfully", category='success')
             return redirect(request.args.get("next") or url_for("admin.index"))
-        flash("Wrong username or password", category='error')
+        flash("Invalid username or password", category='error')
     return render_template('login.html', title='login', form=form)
     
 @app.route('/logout/')
+@requires_auth
 def logout():
     logout_user()
     flash("Logged out successfully")
     return redirect(url_for('login'))
+    
+@app.route('/register/', methods=['GET', 'POST'])
+@redirect_auth
+def register():
+    cls = User
+    form = RegisterForm()
+    # if request.method == 'GET':
+    #     return render_template('register.html')
+    if request.method == 'POST' and form.validate_on_submit():
+        try:
+            user = User(form.username.data, form.email.data, generate_password_hash(form.password.data))
+            user.save()
+            
+            user_obj = User(user.username)
+            login_user(user_obj)
+            flash("Registered successfully", category='success')
+            return redirect(request.args.get("next") or url_for("login"))
+            # user_obj = User()
+        except DuplicateKeyError as n:
+            unique = ['username', 'email']
+            for field in unique:
+                if field in str(n):
+                    flash("Duplicate entry: %s already exists" % (field.title()))
+        except NotUniqueError as n:
+            unique = ['username', 'email']
+            for field in unique:
+                if field in str(n):
+                    flash("Duplicate entry: %s already exists" % (field.title()))
+    return render_template('register.html', title='register', form=form)
+    # user = User(request.form['username'], request.form['password'], request.form['email'])
+    # db.session.add(user)
+    # db.session.save()
 
 
 # register urls
