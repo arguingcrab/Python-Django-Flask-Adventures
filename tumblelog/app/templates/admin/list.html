@@ -1,5 +1,5 @@
 {% extends "admin/base.html" %}
-
+{% block title %}:) | admin{% endblock %}
 {% block content %}
   {% with messages = get_flashed_messages() %}
     {% if messages %}
@@ -10,27 +10,36 @@
       </div>
     {% endif %}
   {% endwith %}
-  <table class="condensed-table zebra-striped">
+  <table class="sortable highlight bordered centered responsive-table">
     <thead>
-      <th class="center">Title</th>
-      <th class="center">Created</th>
-      <th class="center">Actions</th>
+      <th class="">Title</th>
+      <th class="">Created</th>
+      <th class="">Archived</th>
+      <th class="sorttable_nosort">Actions</th>
     </thead>
     <tbody>
       {% if posts %}
         {% for post in posts %}
           <tr>
-            <th class="center"><a href="{{ url_for('admin.edit', slug=post.slug) }}">{{ post.title }}</a></th>
-            <td class="center">{{ post.created_at.strftime('%Y-%m-%d') }}</td>
-            <td class="center">
+            <th class=""><a href="{{ url_for('admin.edit', slug=post.slug) }}">{{ post.title }}</a></th>
+            <td class="">{{ post.created_at.strftime('%Y-%m-%d') }}
+              {% if post.post_author %}by {{ post.post_author.username }}{% endif %}
+            </td>
+            <td class="">{{ post.archived_at.strftime('%Y-%m-%d') if post.archived_at else '-' }}</td>
+            <td class="">
               <a href="{{ url_for('admin.edit', slug=post.slug) }}" class="btn primary"><i class="large material-icons">mode_edit</i></a>
               <a target="_blank" href="{{ url_for('posts.detail', slug=post.slug) }}" class="btn primary"><i class="large material-icons">visibility</i></a>
+              <a href="" class="btn primary"><i class="large material-icons">comment</i></a>
             </td>
           </tr>
         {% endfor %}
       {% else %}
-        <tr><th colspan="3" class="center">no posts to display</th></tr>
+        <tr><th colspan="4" class="center">no posts to display</th></tr>
       {% endif %}
     </tbody>
   </table>
+{% endblock %}
+
+{% block js_footer %}
+<script src="https://www.kryogenix.org/code/browser/sorttable/sorttable.js"></script>
 {% endblock %}

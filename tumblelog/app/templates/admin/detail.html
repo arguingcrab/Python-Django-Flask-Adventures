@@ -17,6 +17,12 @@
     <div class="actions">
       <input type="submit" class="btn primary" value="save" />
       <a href="{{ url_for('admin.index') }}" class="btn secondary">cancel</a>
+      {% if not create %}
+        <div class="right">
+          <a href="{{ url_for('delete_archive_post', edit_type='archive', post_slug=form.slug.data) }}" class="btn secondary"><i class="large material-icons">{{ 'archive' if not post.archived_at else 'unarchive'}}</i></a>
+          <a href="{{ url_for('delete_archive_post', edit_type='delete', post_slug=form.slug.data) }}" class="btn primary"><i class="large material-icons">delete_forever</i></a>
+        </div>
+      {% endif %}
     </div>
   </form>
 {% endblock %}

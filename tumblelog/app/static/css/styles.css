@@ -1,5 +1,7 @@
 body {
-  padding: 20px;
+  display: flex;
+  min-height: 100vh;
+  flex-direction: column;
 }
 
 .messages {
@@ -14,3 +16,10 @@ form fieldset {
 form textarea {
   height: auto;
 }
+
+main {
+  flex: 1 0 auto;
+}
+
+.ui-menu { width: 150px; }
+footer.row { margin-bottom: 0;}

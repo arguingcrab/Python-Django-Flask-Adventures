@@ -1,21 +1,22 @@
 {% extends "base.html" %}
 {% block navbar %}
-  <style>
-    .ui-menu { width: 150px; }
-  </style>
   <div class="navbar navbar-static-top navbar-default">
     <div class="container row">
       <nav>
-        <div class="blue-grey darken-4 nav-wrapper">
+        <div class="blue-grey darken-3 nav-wrapper">
           <div class="col s12">
             <a href="{{ url_for('admin.index') }}" class="brand-logo">:) admin</a>
             <a href="#" data-activates="mobile-demo" class="button-collapse"><i class="material-icons">menu</i></a>
             <ul id="nav-mobile" class="right hide-on-med-and-down">
-              <li><a href="{{ url_for('list_users') }}">Users</a></li>
-              <li><a href="{{ url_for('profile', user_name=current_user.username) }}">Profile</a></li>
-              <li><a href="{{ url_for('logout') }}">Logout</a></li>
+              <li class="{{ 'active' if request.path == '/admin/' }}"><a href="{{ url_for('admin.index') }}"><i class="large material-icons">home</i></a></li>
+              <li><a target="_blank" href="{{ url_for('posts.list') }}"><i class="large material-icons">launch</i></a></li>
+              <li class="{{ 'active' if request.path == '/users/' }}"><a href="{{ url_for('list_users') }}"><i class="large material-icons">group</i></a></li>
+              <li class="{{ 'active' if '/user/' in request.path }}"><a href="{{ url_for('profile', user_name=current_user.username) }}"><i class="large material-icons">settings</i></a></li>
+              <li><a href="{{ url_for('logout') }}"><i class="large material-icons">exit_to_app</i></a></li>
             </ul>
             <ul class="side-nav white-text blue-grey darken-4" id="mobile-demo">
+              <li><a class="white-text" href="{{ url_for('admin.index') }}">Home</a></li>
+              <li><a target="_blank" class="white-text" href="{{ url_for('posts.list') }}">Visit Site</a></li>
               <li><a class="white-text" href="{{ url_for('list_users') }}">Users</a></li>
               <li><a class="white-text" href="{{ url_for('profile', user_name=current_user.username) }}">Profile</a></li>
               <li><a class="white-text" href="{{ url_for('logout') }}">Logout</a></li>

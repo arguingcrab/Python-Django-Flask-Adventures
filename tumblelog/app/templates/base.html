@@ -13,32 +13,41 @@
     {% endblock %}
   </head>
   <body>
-    {% block navbar %}
-      <div class="navbar navbar-static-top navbar-default">
-        <div class="container">
-          <a class="navbar-brand" href="/">:)</a>
-          <div class="nav-collapse">
-              {% block navbar_right %}
-                <ul class="nav navbar-nav pull-right">
-                  <li></li>
-                </ul>
-              {% endblock %}
+    <header>
+      {% block navbar %}
+        <div class="navbar navbar-static-top navbar-default">
+          <div class="container">
+            <a class="navbar-brand" href="/">:)</a>
+            <div class="nav-collapse">
+                {% block navbar_right %}
+                  <ul class="nav navbar-nav pull-right">
+                    <li></li>
+                  </ul>
+                {% endblock %}
+            </div>
           </div>
         </div>
-      </div>
-    {% endblock %}
-    <div class="container page">
-      <div class="content">
-        {% block page_header %}{% endblock %}
-        {% block content %}{% endblock %}
-      </div>
-      <hr />
-      {% block footer %}
-        <footer>
-          <p>&copy;</p>
-        </footer>
       {% endblock %}
-    </div>
+    </header>
+    <main>
+      <div class="container page">
+        <div class="content">
+          {% block page_header %}{% endblock %}
+          {% block content %}{% endblock %}
+        </div>
+        <br /><hr />
+      </div>
+    </main>
+    {% block footer %}
+      <footer class="page-footer blue-grey darken-3 container row">
+        <div class="footer-copyright">
+          <div class="col s12 white-text">
+            &copy; arguingcrab
+            <a class="blue-text text-lighten-4 right" href="https://github.com/arguingcrab">git</a>
+          </div>
+        </div>
+      </footer>
+    {% endblock %}
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>
     <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/materialize/0.98.2/js/materialize.min.js"></script>

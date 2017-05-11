@@ -11,6 +11,11 @@ validation with
 login and registration with
 [https://flask-login.readthedocs.io/en/latest/](https://flask-login.readthedocs.io/en/latest/)
 
+design(s) with
+[http://materializecss.com/](http://materializecss.com/)
+
+[https://www.kryogenix.org/code/browser/sorttable/](https://www.kryogenix.org/code/browser/sorttable/)
+
 ### commands and console
 `python manage.py runserver`
 
@@ -26,3 +31,4 @@ login and registration with
 - add role --> user
 - flask-security `pip install flask-security` for confirmation and reset
 - add search
+- add list all comments + delete + required author

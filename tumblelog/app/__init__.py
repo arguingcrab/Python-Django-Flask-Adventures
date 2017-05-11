@@ -2,10 +2,10 @@ from flask import Flask
 from flask_mongoengine import MongoEngine
 from flask_login import LoginManager
 
-# sensitive data would go under /instance/config.py (from_pyfile)
 app = Flask(__name__, instance_relative_config = True)
 app.config.from_object('config')
-app.config.from_pyfile('config.py')
+# sensitive data would go under /instance/config.py (from_pyfile)
+# app.config.from_pyfile('config.py')
 
 db = MongoEngine(app)
 

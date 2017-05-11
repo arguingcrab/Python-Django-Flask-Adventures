@@ -1,18 +1,18 @@
 from flask import Blueprint, request, redirect, render_template, url_for, flash
 from flask.views import MethodView
 from flask_mongoengine.wtf import model_form
-from flask_login import login_user, logout_user
+from flask_login import login_user, logout_user, login_required
 from mongoengine import ValidationError
 from mongoengine.errors import NotUniqueError
 from pymongo.errors import DuplicateKeyError
 from werkzeug.security import generate_password_hash
 from app import app, db
-from .auth import redirect_auth, requires_auth
+from .auth import redirect_auth
 from .forms import LoginForm, RegisterForm
 from .models import Post, Comment, BlogPost, Video, Image, Quote, User
 
 '''
-views/functions that don't require login
+views/functions that don't require login + login/register/logout
 '''
 
 posts = Blueprint('posts', __name__, template_folder='templates')
@@ -21,24 +21,6 @@ class ListView(MethodView):
     def get(self):
         posts = Post.objects.all()
         return render_template('posts/list.html', posts=posts)
-
-@app.route('/category/', defaults={'category': ''}, methods=['GET', 'POST'])
-@app.route('/category/<category>', methods=['GET', 'POST'])
-def list_category(category):
-    print(category)
-    if category.lower() in ('post', 'posts', 'blog') :
-        posts = Post.objects(class_check=True, _cls__in=['Post.BlogPost'])
-    elif category.lower() in ('video', 'videos') :
-        posts = Post.objects(class_check=True, _cls__in=['Post.Video'])
-    elif category.lower() in ('image', 'images') :
-        posts = Post.objects(class_check=True, _cls__in=['Post.Image'])
-    elif category.lower() in ('quote', 'quotes') :
-        posts = Post.objects(class_check=True, _cls__in=['Post.Quote'])
-    else:
-        posts = None
-    # elif category.lower() in 'images':
-    #     posts = Post.objects(class_check=True, _cls__in=['Post.Image'])
-    return render_template('posts/list.html', posts=posts)
         
         
 class DetailView(MethodView):
@@ -87,16 +69,11 @@ def login():
     cls = User
     form = LoginForm()
     if request.method == 'POST' and form.validate_on_submit():
-        # print(db.users.find_one_or_404({'_id': form.username.data}))
-        # print(User.objects.all())
-        # print(form.username.data)
-        # .where(User.username == form.username.data))
         try:
             user = cls.objects.get(username=form.username.data)
         except:
             user=None
         if user and User.validate_login(user.password, form.password.data):
-            # user_obj = User(user['_id'])
             user_obj = User(user.username)
             if user.active:
                 login_user(user_obj)
@@ -105,46 +82,56 @@ def login():
         flash("Invalid username or password", category='error')
     return render_template('login.html', title='login', form=form)
     
+    
 @app.route('/logout/')
-@requires_auth
+@login_required
 def logout():
     logout_user()
-    flash("Logged out successfully")
+    # flash("Logged out successfully")
     return redirect(url_for('login'))
+
     
 @app.route('/register/', methods=['GET', 'POST'])
 @redirect_auth
 def register():
     cls = User
     form = RegisterForm()
-    # if request.method == 'GET':
-    #     return render_template('register.html')
     if request.method == 'POST' and form.validate_on_submit():
         try:
             user = User(form.username.data, form.email.data, generate_password_hash(form.password.data), active=False)
             user.save()
-            
+            # if you want to auto-log them in after registering
             # user_obj = User(user.username)
             # login_user(user_obj)
             flash("Registered successfully", category='success')
             return redirect(request.args.get("next") or url_for("login"))
-            # user_obj = User()
-        except DuplicateKeyError as n:
-            unique = ['username', 'email']
-            for field in unique:
-                if field in str(n):
-                    flash("Duplicate entry: %s already exists" % (field.title()))
-        except NotUniqueError as n:
+        except (DuplicateKeyError, NotUniqueError)as n:
+            # pymongo exception / mongoengine exception
             unique = ['username', 'email']
             for field in unique:
                 if field in str(n):
                     flash("Duplicate entry: %s already exists" % (field.title()))
     return render_template('register.html', title='register', form=form)
-    # user = User(request.form['username'], request.form['password'], request.form['email'])
-    # db.session.add(user)
-    # db.session.save()
 
 
-# register urls
+@app.route('/category/', defaults={'category': ''}, methods=['GET', 'POST'])
+@app.route('/category/<category>', methods=['GET', 'POST'])
+def list_category(category):
+    print(category)
+    if category.lower() in ('post', 'posts', 'blog') :
+        posts = Post.objects(class_check=True, _cls__in=['Post.BlogPost'])
+    elif category.lower() in ('video', 'videos') :
+        posts = Post.objects(class_check=True, _cls__in=['Post.Video'])
+    elif category.lower() in ('image', 'images') :
+        posts = Post.objects(class_check=True, _cls__in=['Post.Image'])
+    elif category.lower() in ('quote', 'quotes') :
+        posts = Post.objects(class_check=True, _cls__in=['Post.Quote'])
+    else:
+        posts = None
+        
+    return render_template('posts/list.html', posts=posts)
+
+
+# register class urls (posts.list, posts.detail)
 posts.add_url_rule('/', view_func=ListView.as_view('list'))
 posts.add_url_rule('/<slug>/', view_func=DetailView.as_view('detail'))
