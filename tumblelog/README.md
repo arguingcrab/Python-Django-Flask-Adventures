@@ -21,3 +21,8 @@ login and registration with
 >>> user = User('admin', 'admin@example.com', generate_password_hash('password'), 'admin', True)
 >>> user.save()
 ```
+
+### todo
+- add role --> user
+- flask-security `pip install flask-security` for confirmation and reset
+- add search

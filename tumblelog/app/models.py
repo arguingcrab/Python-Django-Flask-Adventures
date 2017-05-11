@@ -147,7 +147,7 @@ class User(db.Document):
 def load_user(username):
     # u = app.config['USERS_COLLECTION'].find_one({'_id': username})
     # u = DBUsers.query.get(username)
-    u = User.objects(username=username).first()
+    u = User.objects.get(username=username)
     # print(">>>",u.username)
     # cls.objects(username=form.username.data)
     # if not u:

@@ -21,6 +21,24 @@ class ListView(MethodView):
     def get(self):
         posts = Post.objects.all()
         return render_template('posts/list.html', posts=posts)
+
+@app.route('/category/', defaults={'category': ''}, methods=['GET', 'POST'])
+@app.route('/category/<category>', methods=['GET', 'POST'])
+def list_category(category):
+    print(category)
+    if category.lower() in ('post', 'posts', 'blog') :
+        posts = Post.objects(class_check=True, _cls__in=['Post.BlogPost'])
+    elif category.lower() in ('video', 'videos') :
+        posts = Post.objects(class_check=True, _cls__in=['Post.Video'])
+    elif category.lower() in ('image', 'images') :
+        posts = Post.objects(class_check=True, _cls__in=['Post.Image'])
+    elif category.lower() in ('quote', 'quotes') :
+        posts = Post.objects(class_check=True, _cls__in=['Post.Quote'])
+    else:
+        posts = None
+    # elif category.lower() in 'images':
+    #     posts = Post.objects(class_check=True, _cls__in=['Post.Image'])
+    return render_template('posts/list.html', posts=posts)
         
         
 class DetailView(MethodView):
