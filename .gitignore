@@ -2,6 +2,7 @@
 env/
 **__pycache__/
 instance/
+*/config/local.py
 
 ### Files
 *.pyc
