@@ -4,6 +4,7 @@ from flask_mongoengine.wtf import model_form
 from flask_login import login_user, logout_user, login_required
 from mongoengine import ValidationError
 from mongoengine.errors import NotUniqueError
+from mongoengine.queryset.visitor import Q
 from pymongo.errors import DuplicateKeyError
 from werkzeug.security import generate_password_hash
 from app import app, db
@@ -60,7 +61,7 @@ class DetailView(MethodView):
                 return redirect(url_for('posts.detail', slug=slug))
             except ValidationError:
                 flash(":(")
-        return render_template('post/detail.html', **context)
+        return render_template('posts/detail.html', **context)
 
 
 @app.route('/login/', methods=['GET', 'POST'])
@@ -131,6 +132,26 @@ def list_category(category):
         
     return render_template('posts/list.html', posts=posts)
 
+
+@app.route('/search/', methods=['GET', 'POST'])
+def search_posts():
+    data = request.form.get('search', '')
+    print(request.form)
+    print(request.referrer, data)
+    try:
+        if 'admin' in request.referrer and data:
+            posts = Post.objects(Q(title__contains=data) | \
+                Q(slug__contains=data) | Q(body__contains=data) | \
+                Q(author__contains=data) | Q(post_author__contains=d))
+
+            print(posts)
+            return render_template('admin/search_results.html', posts=posts, data=data)
+        else:
+            # objects = Post.objects.search(data)
+            # print(objects)
+            return redirect(url_for('admin.index'))
+    except:
+        return redirect(url_for('admin.index'))
 
 # register class urls (posts.list, posts.detail)
 posts.add_url_rule('/', view_func=ListView.as_view('list'))

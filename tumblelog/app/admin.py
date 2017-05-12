@@ -148,6 +148,8 @@ def delete_archive_post(edit_type, post_slug):
     
     flash("Post updated")
     return redirect(url_for('admin.index'))
+    
+
 
 
 # register class urls (admin.index, admin.create, admin.edit)

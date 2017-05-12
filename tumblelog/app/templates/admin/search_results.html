@@ -1,0 +1,23 @@
+{% extends "admin/base.html" %}
+{% block content %}
+  {% if posts %}
+    {% for post in posts %}
+      <p><a href="{{ url_for('posts.detail', slug=post.slug) }}">{{ post.title }}</a></p>
+      {% if post.body %}
+        {% if post.post_type == "Quote" %}
+          <blockquote>{{ post.body|truncate(50) }}<br /><small>&mdash; {{ post.author }}</small></blockquote>
+        {% else %}
+          <p>{{ post.body|truncate(50) }} &mdash; {{ post.author }}</p>
+        {% endif %}
+      {% endif %}
+      <p><small>
+        {{ post.created_at.strftime('%H:%M %Y-%m-%d') }}&nbsp;|&nbsp;
+        {% with total=post.comments|length %}
+          {{ total }} comment {%- if total > 1 %}s{%- endif -%}
+        {% endwith %}
+      </small></p>
+    {% endfor %}
+  {% else %}
+  <p class="center">no posts to display :(</p>
+  {% endif %}
+{% endblock %}

@@ -9,7 +9,7 @@
             <div class="input">
               {% if field.name == "body" %}
                 {{ field(rows=10, cols=40) }}
-              {% else %}
+              {% elif field.name != "archived_at" or field.name != "post_author" %}
                 {{ field() }}
               {% endif %}
               {% if field.errors or field.help_text %}
