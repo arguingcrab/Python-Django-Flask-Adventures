@@ -10,23 +10,34 @@
       </div>
     {% endif %}
   {% endwith %}
-  {% include 'search.html' ignore missing %}
+  {% include 'admin/search.html' ignore missing %}
   <table class="sortable highlight bordered centered responsive-table">
     <thead>
       <th class="">Title</th>
+      <th class="">Category</th>
       <th class="">Created</th>
       <th class="">Archived</th>
+      <th class="">Comments</th>
       <th class="sorttable_nosort">Actions</th>
     </thead>
     <tbody>
       {% if posts %}
         {% for post in posts %}
           <tr>
-            <th class=""><a href="{{ url_for('admin.edit', slug=post.slug) }}">{{ post.title }}</a></th>
+            <th class="center"><a href="{{ url_for('admin.edit', slug=post.slug) }}">{{ post.title }}</a></th>
+            <th class="center">
+              {% if post._cls.split('.')[1] == 'BlogPost' %}
+                <a href="{{ url_for('admin_list_category', category='blog_post') }}">Blog Post</a>
+              {% else %}
+                <a href="{{ url_for('admin_list_category', category=post._cls.split('.')[1].lower()) }}">{{ post._cls.split('.')[1] }}</a>
+              {% endif %}
+            </th>
+            </th>
             <td class="">{{ post.created_at.strftime('%Y-%m-%d') }}
               {% if post.post_author %}by {{ post.post_author.username }}{% endif %}
             </td>
             <td class="">{{ post.archived_at.strftime('%Y-%m-%d') if post.archived_at else '-' }}</td>
+            <td class="">{% with total=post.comments|length %}{{ total }} comment {%- if total > 1 or total == 0 %}s{%- endif -%}{% endwith %}</td>
             <td class="">
               <a href="{{ url_for('admin.edit', slug=post.slug) }}" class="btn primary"><i class="large material-icons">mode_edit</i></a>
               <a target="_blank" href="{{ url_for('posts.detail', slug=post.slug) }}" class="btn primary"><i class="large material-icons">visibility</i></a>
@@ -35,7 +46,7 @@
           </tr>
         {% endfor %}
       {% else %}
-        <tr><th colspan="4" class="center">no posts to display</th></tr>
+        <tr><th colspan="6" class="center">no posts to display</th></tr>
       {% endif %}
     </tbody>
   </table>

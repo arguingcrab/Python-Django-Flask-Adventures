@@ -1,6 +1,6 @@
 from flask_wtf import Form  
 from wtforms import StringField, PasswordField, SelectField, BooleanField
-from wtforms.validators import DataRequired
+from wtforms.validators import DataRequired, Email
 
 
 class LoginForm(Form):  
@@ -11,12 +11,12 @@ class LoginForm(Form):
 class RegisterForm(Form):
     """Register form"""
     username = StringField('Username', validators=[DataRequired()])
-    email = StringField('Email', validators=[DataRequired()])
+    email = StringField('Email', validators=[DataRequired(), Email()])
     password = PasswordField('Password', validators=[DataRequired()])
     
 class UserForm(Form):
     """Edit user form"""
-    email = StringField('Email', validators=[DataRequired()])
+    email = StringField('Email', validators=[DataRequired(), Email()])
     active = BooleanField('Active')
     # status = StringField('Status', validators=[DataRequired()])
     password = PasswordField('Password')

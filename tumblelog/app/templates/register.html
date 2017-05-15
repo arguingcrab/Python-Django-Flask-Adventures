@@ -28,6 +28,7 @@
               {{ form.password.errors|join(' ') }}
           </div>
           <button class="btn btn-default" type="submit">Register</button>
+          <a href="{{ url_for('login') }}" class="btn secondary right">Login</a>
       </div>
   </form>
 

@@ -4,7 +4,6 @@ from flask_mongoengine.wtf import model_form
 from flask_login import login_user, logout_user, login_required
 from mongoengine import ValidationError
 from mongoengine.errors import NotUniqueError
-from mongoengine.queryset.visitor import Q
 from pymongo.errors import DuplicateKeyError
 from werkzeug.security import generate_password_hash
 from app import app, db
@@ -118,8 +117,7 @@ def register():
 @app.route('/category/', defaults={'category': ''}, methods=['GET', 'POST'])
 @app.route('/category/<category>', methods=['GET', 'POST'])
 def list_category(category):
-    print(category)
-    if category.lower() in ('post', 'posts', 'blog') :
+    if category.lower() in ('post', 'posts', 'blog', 'blog_post', 'blog_posts') :
         posts = Post.objects(class_check=True, _cls__in=['Post.BlogPost'])
     elif category.lower() in ('video', 'videos') :
         posts = Post.objects(class_check=True, _cls__in=['Post.Video'])
@@ -132,26 +130,6 @@ def list_category(category):
         
     return render_template('posts/list.html', posts=posts)
 
-
-@app.route('/search/', methods=['GET', 'POST'])
-def search_posts():
-    data = request.form.get('search', '')
-    print(request.form)
-    print(request.referrer, data)
-    try:
-        if 'admin' in request.referrer and data:
-            posts = Post.objects(Q(title__contains=data) | \
-                Q(slug__contains=data) | Q(body__contains=data) | \
-                Q(author__contains=data) | Q(post_author__contains=d))
-
-            print(posts)
-            return render_template('admin/search_results.html', posts=posts, data=data)
-        else:
-            # objects = Post.objects.search(data)
-            # print(objects)
-            return redirect(url_for('admin.index'))
-    except:
-        return redirect(url_for('admin.index'))
 
 # register class urls (posts.list, posts.detail)
 posts.add_url_rule('/', view_func=ListView.as_view('list'))

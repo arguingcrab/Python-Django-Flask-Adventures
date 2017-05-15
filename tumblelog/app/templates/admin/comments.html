@@ -1,0 +1,29 @@
+{% extends "admin/base.html" %}
+{% block content %}
+  <h4></h4>
+  {% if posts %}
+    <div class="">
+      {% for post in posts %}
+        <div>
+          <p><a href="{{ url_for('posts.detail', slug=post.slug) }}">{{ post.title }}</a></p>
+          <p>
+            {% if post.comments %}
+              {% for comment in post.comments %}
+                <form method="POST" action="?id={{comment}}">
+                  {{comment.id}}
+                  {{comment.body}}
+                  {{comment.author}}
+                  {{ post.created_at.strftime('%H:%M %Y-%m-%d') }}
+                  {{comment.approved}}
+                  <!-- <button class="btn waves-effect waves-light" type="submit" name="action"><i class="material-icons">done</i></button> -->
+                </form>
+              {% endfor %}
+            {% endif %}
+          </p>
+        </div>
+      {% endfor %}
+    </div>
+  {% else %}
+  <p class="center">no posts to display :(</p>
+  {% endif %}
+{% endblock %}

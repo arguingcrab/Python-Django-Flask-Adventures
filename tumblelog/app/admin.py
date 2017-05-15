@@ -1,9 +1,11 @@
+import os
 from flask import Blueprint, request, redirect, render_template, url_for, flash, session
 from flask.views import MethodView
 from flask_mongoengine.wtf import model_form
 from flask_login import login_required, current_user
 from mongoengine import ValidationError
 from mongoengine.errors import NotUniqueError
+from mongoengine.queryset.visitor import Q
 from pymongo.errors import DuplicateKeyError
 from werkzeug.security import generate_password_hash
 from datetime import datetime
@@ -41,7 +43,7 @@ class Detail(MethodView):
             post = Post.objects.get_or_404(slug=slug)
             # handle old posts also
             cls = post.__class__ if post.__class__ != Post else BlogPost
-            form_cls = model_form(cls, exclude=('created_at', 'comments', 'archived_at' 'post_author'))
+            form_cls = model_form(cls, exclude=('created_at', 'comments', 'archived_at', 'post_author'))
             if request.method == 'POST':
                 form = form_cls(request.form, initial=post._data)
             else:
@@ -73,7 +75,9 @@ class Detail(MethodView):
             form.populate_obj(post)
             try:
                 post.save()
-                # return redirect(url_for('admin.index'))
+                if context.get('create'):
+                    flash('Post created')
+                    return redirect(url_for('admin.index'))
                 flash('Post updated')
                 return render_template('admin/detail.html', **context)
             except ValidationError as e:
@@ -151,8 +155,51 @@ def delete_archive_post(edit_type, post_slug):
     
 
 
+@app.route('/admin/search/', methods=['GET', 'POST'])
+@login_required
+def admin_search_posts():
+    data = request.form.get('search', '')
+    if request.referrer and 'admin' in request.referrer and data:
+        posts = Post.objects(Q(title__contains=data) | \
+            Q(slug__contains=data) | Q(body__contains=data) | \
+            Q(author__contains=data))
+
+        return render_template('admin/search_results.html', posts=posts, data=data)
+    else:
+        return redirect(url_for('admin.index'))
+        
+@app.route('/admin/category/', defaults={'category': ''}, methods=['GET', 'POST'])
+@app.route('/admin/category/<category>/', methods=['GET', 'POST'])
+def admin_list_category(category):
+    if category.lower() == 'blog_post' :
+        posts = Post.objects(class_check=True, _cls__in=['Post.BlogPost'])
+    elif category.lower() == 'video' :
+        posts = Post.objects(class_check=True, _cls__in=['Post.Video'])
+    elif category.lower() == 'image' :
+        posts = Post.objects(class_check=True, _cls__in=['Post.Image'])
+    elif category.lower() == 'quote' :
+        posts = Post.objects(class_check=True, _cls__in=['Post.Quote'])
+    else:
+        posts = None
+        
+    return render_template('admin/list.html', posts=posts)
+    
+@app.route('/admin/comments/', defaults={'slug': ''}, methods=['GET', 'POST'])
+@app.route('/admin/comments/<slug>/', methods=['GET', 'POST'])    
+@login_required
+def manage_comments(slug):
+    cls = Post
+    posts = cls.objects(slug=slug)
+    return render_template('admin/comments.html', posts=posts)
+
+
+@app.route('/admin/purge', methods=['GET', 'POST'])    
+@login_required
+def purge():
+    app.secret_key = os.urandom(32)
+    return redirect(url_for('admin.index'))
 
 # register class urls (admin.index, admin.create, admin.edit)
 admin.add_url_rule('/admin/', view_func=List.as_view('index'))
-admin.add_url_rule('/admin/create/', defaults={'slug': None}, view_func=Detail.as_view('create'))
-admin.add_url_rule('/admin/<slug>/', view_func=Detail.as_view('edit'))
+admin.add_url_rule('/admin/post/create/', defaults={'slug': None}, view_func=Detail.as_view('create'))
+admin.add_url_rule('/admin/post/<slug>/', view_func=Detail.as_view('edit'))

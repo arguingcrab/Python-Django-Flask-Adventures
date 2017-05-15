@@ -11,8 +11,8 @@
       </div>
     {% endif %}
   {% endwith %}
-  <h3>{% if create %}New{% else %}Edit{% endif %}</h3>
-  <form action="?type={{ request.args.get('type') }}" method="POST">
+  <h3>{% if create %}New</h3><form action="?type={{ request.args.get('type') }}"  
+  {% else %}Edit</h3><form action="" {% endif %}method="POST">
     {{ forms.render(form) }}
     <div class="actions">
       <input type="submit" class="btn primary" value="save" />

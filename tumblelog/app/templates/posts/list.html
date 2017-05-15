@@ -19,7 +19,7 @@
       <p><small>
         {{ post.created_at.strftime('%H:%M %Y-%m-%d') }}&nbsp;|&nbsp;
         {% with total=post.comments|length %}
-          {{ total }} comment {%- if total > 1 %}s{%- endif -%}
+          {{ total }} comment {%- if total > 1 or total == 0 %}s{%- endif -%}
         {% endwith %}
       </small></p>
     {% endfor %}
