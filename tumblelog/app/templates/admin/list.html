@@ -37,11 +37,18 @@
               {% if post.post_author %}by {{ post.post_author.username }}{% endif %}
             </td>
             <td class="">{{ post.archived_at.strftime('%Y-%m-%d') if post.archived_at else '-' }}</td>
-            <td class="">{% with total=post.comments|length %}{{ total }} comment {%- if total > 1 or total == 0 %}s{%- endif -%}{% endwith %}</td>
+            {% set unread_comments = [0] %}
+            {% for p in post.comments %}
+              {% if not p.approved %}
+                {% if unread_comments.append(unread_comments.pop() + 1) %}{% endif %}
+              {% endif %}
+            {% endfor %}
+            <td class="">{% with total=post.comments|length %}{{ total }} comment {%- if total > 1 or total == 0 %}s{%- endif -%}{% endwith %} 
+              <span class="new badge {% if unread_comments[0] == 0 %}grey{% endif %}">{{ unread_comments[0] }}</span></td>
             <td class="">
-              <a href="{{ url_for('admin.edit', slug=post.slug) }}" class="btn primary"><i class="large material-icons">mode_edit</i></a>
-              <a target="_blank" href="{{ url_for('posts.detail', slug=post.slug) }}" class="btn primary"><i class="large material-icons">visibility</i></a>
-              <a href="" class="btn primary"><i class="large material-icons">comment</i></a>
+              <a href="{{ url_for('admin.edit', slug=post.slug) }}" class="btn primary"><i class="tiny material-icons">mode_edit</i></a>
+              <a target="_blank" href="{{ url_for('posts.detail', slug=post.slug) }}" class="btn primary"><i class="tiny material-icons">visibility</i></a>
+              <a href="{{ url_for('manage_comments', slug=post.slug) }}" class="btn primary"><i class="tiny material-icons">comment</i></a>
             </td>
           </tr>
         {% endfor %}

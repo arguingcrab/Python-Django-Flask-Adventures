@@ -1,7 +1,9 @@
+import re, os
+from datetime import datetime
 from flask import Blueprint, request, redirect, render_template, url_for, flash
 from flask.views import MethodView
 from flask_mongoengine.wtf import model_form
-from flask_login import login_user, logout_user, login_required
+from flask_login import login_user, logout_user, login_required, current_user
 from mongoengine import ValidationError
 from mongoengine.errors import NotUniqueError
 from pymongo.errors import DuplicateKeyError
@@ -9,7 +11,7 @@ from werkzeug.security import generate_password_hash
 from app import app, db
 from .auth import redirect_auth
 from .forms import LoginForm, RegisterForm
-from .models import Post, Comment, BlogPost, Video, Image, Quote, User
+from .models import Post, Comment, BlogPost, Video, Image, Quote, User, Session, LoginHistory
 
 '''
 views/functions that don't require login + login/register/logout
@@ -25,7 +27,7 @@ class ListView(MethodView):
         
 class DetailView(MethodView):
     # modified to handle form
-    form = model_form(Comment, exclude=['created_at'])
+    form = model_form(Comment, exclude=['created_at', 'id'])
     
     def get_context(self, slug):
         post = Post.objects.get_or_404(slug=slug)
@@ -52,7 +54,8 @@ class DetailView(MethodView):
         if form.validate():
             comment = Comment()
             form.populate_obj(comment)
-            
+            # comment.ip = request.remote_addr
+            comment.ip = request.environ['REMOTE_ADDR']
             post = context.get('post')
             post.comments.append(comment)
             try:
@@ -70,12 +73,22 @@ def login():
     form = LoginForm()
     if request.method == 'POST' and form.validate_on_submit():
         try:
-            user = cls.objects.get(username=form.username.data)
+            user = cls.objects.get(username__iexact=form.username.data)
         except:
             user=None
         if user and User.validate_login(user.password, form.password.data):
             user_obj = User(user.username)
             if user.active:
+                try:
+                    session = Session.objects.get(user=user)
+                    session.update(set__session=os.urandom(32), set__last_login=datetime.now())
+                except:
+                    # session = Session(user=user, ip=request.remote_addr,session=os.urandom(32), last_login=datetime.now())
+                    session = Session(user=user, ip=request.environ['REMOTE_ADDR'],session=os.urandom(32), last_login=datetime.now())
+                    session.save()
+                # login_history = LoginHistory(user=user, ip=request.remote_addr, date_time=datetime.now())
+                login_history = LoginHistory(user=user, ip=request.environ['REMOTE_ADDR'], date_time=datetime.now())
+                login_history.save()
                 login_user(user_obj)
                 flash("Logged in successfully", category='success')
                 return redirect(request.args.get("next") or url_for("admin.index"))
@@ -86,6 +99,9 @@ def login():
 @app.route('/logout/')
 @login_required
 def logout():
+    user = User.objects.get(username=current_user.username)
+    session = Session.objects.get(user=user)
+    session.update(set__session='')
     logout_user()
     # flash("Logged out successfully")
     return redirect(url_for('login'))
@@ -98,7 +114,7 @@ def register():
     form = RegisterForm()
     if request.method == 'POST' and form.validate_on_submit():
         try:
-            user = User(form.username.data, form.email.data, generate_password_hash(form.password.data), active=False)
+            user = User(re.sub('[^a-zA-Z0-9]', '_', form.username.data).rstrip('_').lstrip('_'), form.email.data, generate_password_hash(form.password.data), active=False)
             user.save()
             # if you want to auto-log them in after registering
             # user_obj = User(user.username)

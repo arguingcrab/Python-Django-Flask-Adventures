@@ -1,13 +1,15 @@
-import re 
+import re, os
+from bson import ObjectId
 from datetime import datetime
 from mongoengine import signals, ValidationError
-from flask import url_for, render_template, flash
-from flask_login import current_user
+from flask import url_for, render_template, flash, request, redirect
+from flask_login import current_user, logout_user
 from cerberus import Validator
 from werkzeug.security import check_password_hash
 from app import db, app, login_manager
 from .bad_words import stops
 from .validators import MyValidator
+# from .views import logout
 
 
 class User(db.Document):
@@ -17,6 +19,7 @@ class User(db.Document):
     status = db.StringField(required=True, default='normal')
     active = db.BooleanField(default=False)
     created_at = db.DateTimeField(default=datetime.now, required=True)
+    # session = db.BinaryField(nullable=True)
         
     def is_authenticated(self):
         return True
@@ -33,6 +36,9 @@ class User(db.Document):
     def get_id(self):
         return self.username
         
+    def get_session(self):
+        return self.session
+        
     def __repr__(self):
         return self.username
         
@@ -44,16 +50,40 @@ class User(db.Document):
 @login_manager.user_loader
 def load_user(username):
     u = User.objects.get(username=username)
-    
+    try:
+        session = Session.objects.get(user=u)
+    except:
+        # session = Session(user=u, ip=request.remote_addr,session=os.urandom(32), last_login=datetime.now())
+        session = Session(user=u, ip=request.environ['REMOTE_ADDR'],session=os.urandom(32), last_login=datetime.now())
+        session.save()
+    delta = session.last_login - datetime.now()
+    if delta.days <= -5:
+        session.update(set__session='')
+    if not session.session:
+        return None
     # current_user will have these values (current_user.username etc)
     return User(u.username, u.email, u.password, u.status, u.active)
-        
+
+
+class Session(db.Document):
+    user = db.ReferenceField(User, unique=True)
+    ip = db.StringField(required=True)
+    session = db.BinaryField(nullable=True)
+    last_login = db.DateTimeField(default=datetime.now, required=True)
+
+
+class LoginHistory(db.Document):
+    user = db.ReferenceField(User)
+    ip = db.StringField(required=True)
+    date_time = db.DateTimeField(required=True)
 
 class Comment(db.EmbeddedDocument):
+    id = db.ObjectIdField(default=ObjectId)
     created_at = db.DateTimeField(default=datetime.now, required=True)
     body = db.StringField(verbose_name="Comment", required=True)
     author = db.StringField(verbose_name="Name", max_length=255, required=True)
-    # approved = db.BooleanField(default=0)
+    approved = db.BooleanField(default=0)
+    ip = db.StringField(default="")
    
 
 class Post(db.DynamicDocument):

@@ -21,15 +21,22 @@
   <p><small>{{ post.created_at.strftime('%H:%M %Y-%m-%d') }}</small></p>
   <hr />
   {% if post.comments %}
+  <div class="card">
     {% for comment in post.comments %}
-      <p>{{ comment.body }}</p>
-      <p><small><strong>{{ comment.author }}</strong> @ {{ comment.created_at.strftime('%H:%M %Y-%m-%d') }}</small></p>
+      {% if comment.approved %}
+        <p>{{ comment.body }}</p>
+        <p><small><strong>{{ comment.author }}</strong> @ {{ comment.created_at.strftime('%H:%M %Y-%m-%d') }}</small></p>
+      {% endif %}
     {% endfor %}
+  </div>
+  {% else %}
+    <p class="center small"><small>no comments to display :(</small></p>
   {% endif %}
   <hr />
-  <h4>add a comment</h4>
+  <b>add a comment</b>
   <form action="." method="POST">
     {{ forms.render(form) }}
+    <small>comment will need to be approved by an admin</small>
     <div class="action">
       <input type="submit" class="btn primary" value="comment" />
     </div>

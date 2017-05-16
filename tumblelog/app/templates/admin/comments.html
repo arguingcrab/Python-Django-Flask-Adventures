@@ -1,29 +1,47 @@
 {% extends "admin/base.html" %}
 {% block content %}
-  <h4></h4>
   {% if posts %}
+    <b class="valign-wrapper"><a href="{{ url_for('admin.index') }}"><i class="small material-icons">arrow_back</i></a> comments for &nbsp; <a target="_blank" href="{{ url_for('posts.detail', slug=posts.slug) }}">{{ posts.title }}</a></b>
     <div class="">
-      {% for post in posts %}
-        <div>
-          <p><a href="{{ url_for('posts.detail', slug=post.slug) }}">{{ post.title }}</a></p>
-          <p>
-            {% if post.comments %}
-              {% for comment in post.comments %}
-                <form method="POST" action="?id={{comment}}">
-                  {{comment.id}}
-                  {{comment.body}}
-                  {{comment.author}}
-                  {{ post.created_at.strftime('%H:%M %Y-%m-%d') }}
-                  {{comment.approved}}
-                  <!-- <button class="btn waves-effect waves-light" type="submit" name="action"><i class="material-icons">done</i></button> -->
+      <table class="sortable highlight bordered centered responsive-table">
+        <thead>
+          <th class="">Comment</th>
+          <th class="">Author Name</th>
+          <th class="">Created At</th>
+          <th class="sorttable_nosort">Actions</th>
+        </thead>
+        <tbody>
+          {% for post in posts.comments %}
+            <div class="">
+              {% if post %}
+                <form method="POST" action="?id={{post.id}}">
+                  <tr>
+                    <td>{{ post.body }}</td>
+                    <td>{{ post.author }}</td>
+                    <td>{{ post.created_at.strftime('%H:%M %Y-%m-%d') }}</td>
+                    <td>
+                      {% if not post.approved %}
+                        <button class="btn waves-effect waves-light" type="submit" name="action"><i class="material-icons">done</i></button>
+                        <a onclick="return confirm('Are you sure?')" href="{{ url_for('manage_comments', slug=posts.slug, id=post.id, delete=True) }}" class="btn primary"><i class="tiny material-icons">delete_forever</i></a>
+                      {% else %}
+                        <a onclick="return confirm('Are you sure?')" href="{{ url_for('manage_comments', slug=posts.slug, id=post.id, delete=True) }}" class="btn primary"><i class="tiny material-icons">delete_forever</i></a>
+                      {% endif %}
+                    </td>
+                  </tr>
                 </form>
-              {% endfor %}
-            {% endif %}
-          </p>
-        </div>
-      {% endfor %}
+              {% endif %}
+            </div>
+          {% endfor %}
+        </tbody>
+      </table>
     </div>
   {% else %}
   <p class="center">no posts to display :(</p>
   {% endif %}
+  {% if not posts.comments %}
+    <p class="center">no comments to display</p>
+  {% endif %}
+{% endblock %}
+{% block js_footer %}
+<script src="https://www.kryogenix.org/code/browser/sorttable/sorttable.js"></script>
 {% endblock %}

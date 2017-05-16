@@ -11,7 +11,7 @@ from werkzeug.security import generate_password_hash
 from datetime import datetime
 from app import app, login_manager
 from .forms import UserForm
-from .models import Post, Comment, BlogPost, Video, Image, Quote, User
+from .models import Post, Comment, BlogPost, Video, Image, Quote, User, Session
 
 '''
 views/functions that do require login/authentication
@@ -117,14 +117,19 @@ def profile(user_name):
             
             # update user obj with new data
             try:
-                cls.objects.get(username=user_name).update(set__email=form.email.data,set__password=new_password, set__active=active_status)
+                email = form.email.data if form.email.data else view_user_name.email
+                cls.objects.get(username=user_name).update(set__email=email,set__password=new_password, set__active=active_status)
                 if not User.validate_login(view_user_name.password, form.password2.data) \
                         and form.password2.data:
                     flash("Profile successfully changed. Please relog.")
                     return redirect(url_for('logout'))
                 else:
                     flash("Profile successfully changed")
-                    return redirect(url_for('profile', user_name = view_user_name.username))
+                    if active_status == False:
+                        dc_user = User.objects.get(username=user_name)
+                        dc_session = Session.objects.get(user=dc_user)
+                        dc_session.update(set__session='')
+                    return redirect(url_for('profile', user_name=view_user_name.username))
             except (DuplicateKeyError, NotUniqueError)as n:
                 flash("Duplicate entry: Email already exists")
     return render_template('admin/edit_user.html', title='register', form=form, current_user=current_user, view_user_name=view_user_name)
@@ -133,9 +138,9 @@ def profile(user_name):
 @app.route('/users/', methods=['GET', 'POST'])
 @login_required
 def list_users():
-        cls = User
-        users = cls.objects.all()
-        return render_template('admin/user-list.html', users=users)
+    cls = User
+    users = cls.objects.all()
+    return render_template('admin/user-list.html', users=users)
         
 
 @app.route('/admin/<edit_type>/<post_slug>/', methods=['GET', 'POST'])        
@@ -163,11 +168,11 @@ def admin_search_posts():
         posts = Post.objects(Q(title__contains=data) | \
             Q(slug__contains=data) | Q(body__contains=data) | \
             Q(author__contains=data))
-
         return render_template('admin/search_results.html', posts=posts, data=data)
     else:
         return redirect(url_for('admin.index'))
-        
+
+
 @app.route('/admin/category/', defaults={'category': ''}, methods=['GET', 'POST'])
 @app.route('/admin/category/<category>/', methods=['GET', 'POST'])
 def admin_list_category(category):
@@ -183,21 +188,38 @@ def admin_list_category(category):
         posts = None
         
     return render_template('admin/list.html', posts=posts)
+
     
 @app.route('/admin/comments/', defaults={'slug': ''}, methods=['GET', 'POST'])
 @app.route('/admin/comments/<slug>/', methods=['GET', 'POST'])    
 @login_required
 def manage_comments(slug):
     cls = Post
-    posts = cls.objects(slug=slug)
+    comment_id = request.args.get('id', '')
+    delete = request.args.get('delete', '')
+    posts = cls.objects.get(slug=slug)
+    if delete:
+        posts.update(pull__comments__id=comment_id)
+        return redirect(url_for('manage_comments', slug=slug))
+    if request.method == 'POST' and comment_id:
+        # For updating documents, if you don’t know the position in a list $/S
+        Post.objects(comments__id=comment_id).update(set__comments__S__approved=True)
+        return redirect(url_for('manage_comments', slug=slug))
     return render_template('admin/comments.html', posts=posts)
 
 
-@app.route('/admin/purge', methods=['GET', 'POST'])    
+@app.route('/admin/purge/', defaults={'username': ''}, methods=['GET', 'POST'])    
+@app.route('/admin/purge/<username>/', methods=['GET', 'POST'])    
 @login_required
-def purge():
-    app.secret_key = os.urandom(32)
-    return redirect(url_for('admin.index'))
+def purge(username):
+    if username:
+        user = User.objects.get(username=username)
+        Session.objects.get(user=user).update(set__session='')
+        return redirect(url_for('list_users'))
+    else:
+        app.secret_key = os.urandom(32)
+        return redirect(url_for('admin.index'))
+
 
 # register class urls (admin.index, admin.create, admin.edit)
 admin.add_url_rule('/admin/', view_func=List.as_view('index'))

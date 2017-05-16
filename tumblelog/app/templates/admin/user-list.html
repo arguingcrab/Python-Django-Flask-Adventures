@@ -10,11 +10,14 @@
       </div>
     {% endif %}
   {% endwith %}
-  <table class="condensed-table zebra-striped">
+  <table class="sortable highlight bordered centered responsive-table">
     <thead>
       <th class="center">Users</th>
       <th class="center">Joined</th>
       <th class="center">Active</th>
+      {% if current_user.status == 'admin' %}
+        <th class="center sorttable_nosort">Actions</th>
+      {% endif %}
     </thead>
     <tbody>
       {% if users %}
@@ -22,7 +25,10 @@
           <tr>
             <th class="center"><a href="{{ url_for('profile', user_name=user.username) }}">{{ user.username }}</a></th>
             <td class="center">{{ user.created_at.strftime('%Y-%m-%d') }}</td>
-            <td class="center">{{ user.active }}</td>
+            <td class="center">{% if user.active %}<i class='small green-text material-icons'>done</i>{% endif %}</td>
+            {% if current_user.status == 'admin' %}
+              <td class="center"><a href="{{ url_for('purge', username=user.username) }}" class=""><i class="tiny material-icons">power_settings_new</i></a></td>
+            {% endif %}
           </tr>
         {% endfor %}
       {% else %}
@@ -30,4 +36,7 @@
       {% endif %}
     </tbody>
   </table>
+{% endblock %}
+{% block js_footer %}
+<script src="https://www.kryogenix.org/code/browser/sorttable/sorttable.js"></script>
 {% endblock %}

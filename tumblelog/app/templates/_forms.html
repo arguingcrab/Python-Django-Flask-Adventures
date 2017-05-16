@@ -3,7 +3,7 @@
       {% for field in form %}
         {% if field.type in ['CSRFTokenField', 'HiddenField'] %}
           {{ field() }}
-        {% else %}
+        {% elif field.name != "approved" and field.name != "ip" %}
           <div class="clearfix {% if field.errors %}errors{% endif %}">
             {{ field.label }}
             <div class="input">
