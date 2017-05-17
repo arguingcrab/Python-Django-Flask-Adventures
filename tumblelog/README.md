@@ -34,7 +34,7 @@ design(s) with
 
 
 ### todo
-- [ ] `request.remote_addr` or `request.environ['REMOTE_ADDR']` ?
+- [ ] `request.headers.getlist("X-Forwarded-For")[0]` or `request.access_route[-1]`
 - [ ] add role --> user
 - [ ] flask-security `pip install flask-security` for confirmation and reset
 - [x] add search

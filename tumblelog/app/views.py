@@ -8,6 +8,7 @@ from mongoengine import ValidationError
 from mongoengine.errors import NotUniqueError
 from pymongo.errors import DuplicateKeyError
 from werkzeug.security import generate_password_hash
+from werkzeug.datastructures import Headers
 from app import app, db
 from .auth import redirect_auth
 from .forms import LoginForm, RegisterForm
@@ -54,7 +55,8 @@ class DetailView(MethodView):
         if form.validate():
             comment = Comment()
             form.populate_obj(comment)
-            comment.ip = request.remote_addr
+            comment.ip = request.access_route[-1]
+            # comment.ip = request.remote_addr
             # comment.ip = request.environ['REMOTE_ADDR']
             post = context.get('post')
             post.comments.append(comment)
@@ -83,10 +85,12 @@ def login():
                     session = Session.objects.get(user=user)
                     session.update(set__session=os.urandom(32), set__last_login=datetime.now())
                 except:
-                    session = Session(user=user, ip=request.remote_addr,session=os.urandom(32), last_login=datetime.now())
+                    session = Session(user=user, ip=request.access_route[-1],session=os.urandom(32), last_login=datetime.now())
+                    # session = Session(user=user, ip=request.remote_addr,session=os.urandom(32), last_login=datetime.now())
                     # session = Session(user=user, ip=request.environ['REMOTE_ADDR'],session=os.urandom(32), last_login=datetime.now())
                     session.save()
-                login_history = LoginHistory(user=user, ip=request.remote_addr, date_time=datetime.now())
+                login_history = LoginHistory(user=user, ip=request.access_route[-1], date_time=datetime.now())
+                # login_history = LoginHistory(user=user, ip=request.remote_addr, date_time=datetime.now())
                 # login_history = LoginHistory(user=user, ip=request.environ['REMOTE_ADDR'], date_time=datetime.now())
                 login_history.save()
                 login_user(user_obj)

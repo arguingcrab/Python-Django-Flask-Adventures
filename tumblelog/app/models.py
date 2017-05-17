@@ -6,6 +6,7 @@ from flask import url_for, render_template, flash, request, redirect
 from flask_login import current_user, logout_user
 from cerberus import Validator
 from werkzeug.security import check_password_hash
+from werkzeug.datastructures import Headers
 from app import db, app, login_manager
 from .bad_words import stops
 from .validators import MyValidator
@@ -53,7 +54,8 @@ def load_user(username):
     try:
         session = Session.objects.get(user=u)
     except:
-        session = Session(user=u, ip=request.remote_addr,session=os.urandom(32), last_login=datetime.now())
+        session = Session(user=u, ip=request.access_route[-1],session=os.urandom(32), last_login=datetime.now())
+        # session = Session(user=u, ip=request.remote_addr,session=os.urandom(32), last_login=datetime.now())
         # session = Session(user=u, ip=request.environ['REMOTE_ADDR'],session=os.urandom(32), last_login=datetime.now())
         session.save()
     delta = session.last_login - datetime.now()

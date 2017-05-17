@@ -21,13 +21,22 @@
   <p><small>{{ post.created_at.strftime('%H:%M %Y-%m-%d') }}</small></p>
   <hr />
   {% if post.comments %}
-  <div class="card">
+  <div class="">
+    {% set unread_comments = [0] %}
+    {% for p in post.comments %}
+      {% if p.approved %}
+        {% if unread_comments.append(unread_comments.pop() + 1) %}{% endif %}
+      {% endif %}
+    {% endfor %}
     {% for comment in post.comments %}
       {% if comment.approved %}
         <p>{{ comment.body }}</p>
         <p><small><strong>{{ comment.author }}</strong> @ {{ comment.created_at.strftime('%H:%M %Y-%m-%d') }}</small></p>
       {% endif %}
     {% endfor %}
+    {% if unread_comments[0] == 0 %}
+      <p class="center small"><small>no comments to display :(</small></p>
+    {% endif %}
   </div>
   {% else %}
     <p class="center small"><small>no comments to display :(</small></p>
