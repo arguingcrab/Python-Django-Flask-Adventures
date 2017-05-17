@@ -1,8 +1,8 @@
-import app
+import app, os
 from mongoengine import connect
 from flask_mongoengine import MongoEngine
 
-SECRET_KEY = '0000'
+SECRET_KEY = os.environ.get('SECRET_KEY')
 
 # --- mLab MongoDB Deployments (new > single-node > aws-sandbox)
 DB_NAME = os.environ.get('DB_NAME')

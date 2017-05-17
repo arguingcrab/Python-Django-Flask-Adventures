@@ -53,8 +53,8 @@ def load_user(username):
     try:
         session = Session.objects.get(user=u)
     except:
-        # session = Session(user=u, ip=request.remote_addr,session=os.urandom(32), last_login=datetime.now())
-        session = Session(user=u, ip=request.environ['REMOTE_ADDR'],session=os.urandom(32), last_login=datetime.now())
+        session = Session(user=u, ip=request.remote_addr,session=os.urandom(32), last_login=datetime.now())
+        # session = Session(user=u, ip=request.environ['REMOTE_ADDR'],session=os.urandom(32), last_login=datetime.now())
         session.save()
     delta = session.last_login - datetime.now()
     if delta.days <= -5:

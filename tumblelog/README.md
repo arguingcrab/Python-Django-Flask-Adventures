@@ -34,6 +34,7 @@ design(s) with
 
 
 ### todo
+- [ ] `request.remote_addr` or `request.environ['REMOTE_ADDR']` ?
 - [ ] add role --> user
 - [ ] flask-security `pip install flask-security` for confirmation and reset
 - [x] add search
