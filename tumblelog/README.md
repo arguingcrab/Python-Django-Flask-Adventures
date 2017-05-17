@@ -40,7 +40,7 @@ design(s) with
   - [x] search category
   - [x] search posts
 - [ ] wordfence-like/analytics/pingdom feature(s)
-  - [ ] basic session & login history
+  - [x] basic session & login history
   - [x] logout specific user
   - [ ] identify country if not local
 - [ ] change validation to be with mongoengine
