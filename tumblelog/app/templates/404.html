@@ -1,0 +1,19 @@
+{% extends "base.html" %}
+{% block content %}
+  <div class="row center-align">
+    <div class="col s12">
+      <i class="large material-icons">sentiment_dissatisfied</i>
+      <p>404</p>
+    </div>
+  </div>
+  <div class="row center-align">
+    <div class="col s4">
+    </div>
+    <div class="col s4">
+      <a href="{{ url_for('posts.list') }}"><i class="large material-icons">home</i></a>
+    </div>
+    <div class="col s4">
+    </div>
+
+  </div>
+{% endblock %}

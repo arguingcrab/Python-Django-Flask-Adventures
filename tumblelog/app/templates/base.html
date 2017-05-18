@@ -40,11 +40,11 @@
     </main>
     {% block footer %}
       <footer class="page-footer blue-grey darken-3 container row">
-        <div class="footer-copyright">
+        <div class="footer-copyright col s12">
           <div class="col s12 white-text">
             &copy; arguingcrab
             <a class="blue-text text-lighten-4 right" href="https://github.com/arguingcrab">git</a>
-            <a href="{{ url_for('purge') }}" class=""><i class="tiny material-icons">power_settings_new</i></a>
+            {% if current_user.is_authenticated %}<a href="{{ url_for('purge') }}" class=""><i class="tiny material-icons">power_settings_new</i></a>{% endif %}
           </div>
         </div>
       </footer>

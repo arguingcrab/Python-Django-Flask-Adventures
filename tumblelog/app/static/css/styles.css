@@ -23,3 +23,5 @@ main {
 
 .ui-menu { width: 150px; }
 footer.row { margin-bottom: 0;}
+
+.post { padding: 20px; margin: 5px 0; }

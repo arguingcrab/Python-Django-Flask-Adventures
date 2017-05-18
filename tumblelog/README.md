@@ -34,7 +34,7 @@ design(s) with
 
 
 ### todo
-- [ ] `request.headers.getlist("X-Forwarded-For")[0]` or `request.access_route[-1]`
+- [x] `request.headers.getlist("X-Forwarded-For")[0]` 0 or 1 `request.access_route[-1]`
 - [ ] add role --> user
 - [ ] flask-security `pip install flask-security` for confirmation and reset
 - [x] add search
@@ -43,13 +43,14 @@ design(s) with
 - [ ] wordfence-like/analytics/pingdom feature(s)
   - [x] basic session & login history
   - [x] logout specific user
+  - [ ] block ip
   - [ ] identify country if not local
 - [ ] change validation to be with mongoengine
 - [x] manage comments
 - [ ] redirects and 404s
 - [ ] sort by archived and not
   - [ ] admin
-  - [ ] front
+  - [x] front - hidden
 - [ ] permissions
 - [ ] edit post previews
   - [ ] video

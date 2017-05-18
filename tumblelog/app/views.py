@@ -22,7 +22,7 @@ posts = Blueprint('posts', __name__, template_folder='templates')
 
 class ListView(MethodView):
     def get(self):
-        posts = Post.objects.all()
+        posts = Post.objects(archived_at='')
         return render_template('posts/list.html', posts=posts)
         
         
@@ -56,12 +56,11 @@ class DetailView(MethodView):
             comment = Comment()
             form.populate_obj(comment)
             comment.ip = request.access_route[-1]
-            # comment.ip = request.remote_addr
-            # comment.ip = request.environ['REMOTE_ADDR']
             post = context.get('post')
             post.comments.append(comment)
             try:
                 post.save()
+                flash("comment has been submitted for review")
                 return redirect(url_for('posts.detail', slug=slug))
             except ValidationError:
                 flash(":(")
@@ -86,12 +85,8 @@ def login():
                     session.update(set__session=os.urandom(32), set__last_login=datetime.now())
                 except:
                     session = Session(user=user, ip=request.access_route[-1],session=os.urandom(32), last_login=datetime.now())
-                    # session = Session(user=user, ip=request.remote_addr,session=os.urandom(32), last_login=datetime.now())
-                    # session = Session(user=user, ip=request.environ['REMOTE_ADDR'],session=os.urandom(32), last_login=datetime.now())
                     session.save()
                 login_history = LoginHistory(user=user, ip=request.access_route[-1], date_time=datetime.now())
-                # login_history = LoginHistory(user=user, ip=request.remote_addr, date_time=datetime.now())
-                # login_history = LoginHistory(user=user, ip=request.environ['REMOTE_ADDR'], date_time=datetime.now())
                 login_history.save()
                 login_user(user_obj)
                 flash("Logged in successfully", category='success')
@@ -107,7 +102,6 @@ def logout():
     session = Session.objects.get(user=user)
     session.update(set__session='')
     logout_user()
-    # flash("Logged out successfully")
     return redirect(url_for('login'))
 
     
@@ -150,6 +144,10 @@ def list_category(category):
         
     return render_template('posts/list.html', posts=posts)
 
+
+@app.errorhandler(404)
+def page_not_found(e):
+    return render_template('404.html'),404
 
 # register class urls (posts.list, posts.detail)
 posts.add_url_rule('/', view_func=ListView.as_view('list'))

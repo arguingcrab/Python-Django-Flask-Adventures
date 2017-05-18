@@ -43,9 +43,18 @@
   {% endif %}
   <hr />
   <b>add a comment</b>
+  {% with messages = get_flashed_messages() %}
+    {% if messages %}
+      <div class="messages">
+        {% for message in messages %}
+          <p>{{ message }}</p>
+        {% endfor %}
+      </div>
+    {% endif %}
+  {% endwith %}
   <form action="." method="POST">
     {{ forms.render(form) }}
-    <small>comment will need to be approved by an admin</small>
+    <!-- <small>comment will need to be approved by an admin</small> -->
     <div class="action">
       <input type="submit" class="btn primary" value="comment" />
     </div>

@@ -11,7 +11,7 @@ from werkzeug.security import generate_password_hash
 from datetime import datetime
 from app import app, login_manager
 from .forms import UserForm
-from .models import Post, Comment, BlogPost, Video, Image, Quote, User, Session
+from .models import Post, Comment, BlogPost, Video, Image, Quote, User, Session, LoginHistory
 
 '''
 views/functions that do require login/authentication
@@ -92,8 +92,8 @@ class Detail(MethodView):
 
     
 # nagivate with or without <user_name> param    
-@app.route('/user/', defaults={'user_name': ''}, methods=['GET', 'POST'])
-@app.route('/user/<user_name>', methods=['GET', 'POST'])
+@app.route('/admin/user/', defaults={'user_name': ''}, methods=['GET', 'POST'])
+@app.route('/admin/user/<user_name>', methods=['GET', 'POST'])
 @login_required
 def profile(user_name):
     cls = User
@@ -135,7 +135,7 @@ def profile(user_name):
     return render_template('admin/edit_user.html', title='register', form=form, current_user=current_user, view_user_name=view_user_name)
 
 
-@app.route('/users/', methods=['GET', 'POST'])
+@app.route('/admin/users/', methods=['GET', 'POST'])
 @login_required
 def list_users():
     cls = User
@@ -194,6 +194,8 @@ def admin_list_category(category):
 @app.route('/admin/comments/<slug>/', methods=['GET', 'POST'])    
 @login_required
 def manage_comments(slug):
+    if not slug:
+        return redirect(url_for('admin.index'))
     cls = Post
     comment_id = request.args.get('id', '')
     delete = request.args.get('delete', '')
@@ -215,10 +217,34 @@ def purge(username):
     if username:
         user = User.objects.get(username=username)
         Session.objects.get(user=user).update(set__session='')
-        return redirect(url_for('list_users'))
+        return redirect(request.args.get("next") or url_for('list_users'))
     else:
         app.secret_key = os.urandom(32)
         return redirect(url_for('admin.index'))
+        
+
+@app.route('/admin/stats/', defaults={'page': ''}, methods=['GET', 'POST'])        
+@app.route('/admin/stats/<page>', methods=['GET', 'POST'])        
+def stats(page):
+    page_num = request.args.get('num', 1)
+    show = request.args.get('show', 10)
+    session_cls = Session
+    login_history_cls = LoginHistory
+    page_type = None if not page else page
+    if not page:
+        sessions = session_cls.objects.limit(10).order_by('-last_login')
+        login_histories = login_history_cls.objects.limit(10).order_by('-date_time')
+    else:
+        if page == 'sessions':
+            # sessions = session_cls.objects.all()
+            sessions = session_cls.objects.paginate(page=int(page_num), per_page=int(show))
+            login_histories = None
+        elif page == 'history':
+            # login_histories = login_history_cls.objects.all()
+            login_histories = login_history_cls.objects.paginate(page=int(page_num), per_page=int(show))
+            sessions = None
+    
+    return render_template('admin/stats.html', sessions=sessions, login_histories=login_histories, page_type=page_type)
 
 
 # register class urls (admin.index, admin.create, admin.edit)

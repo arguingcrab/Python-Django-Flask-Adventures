@@ -44,7 +44,7 @@
               {% endif %}
             {% endfor %}
             <td class="">{% with total=post.comments|length %}{{ total }} comment {%- if total > 1 or total == 0 %}s{%- endif -%}{% endwith %} 
-              <span class="new badge {% if unread_comments[0] == 0 %}grey{% endif %}">{{ unread_comments[0] }}</span></td>
+              <a href="{{ url_for('manage_comments', slug=post.slug) }}"><span class="new badge {% if unread_comments[0] == 0 %}grey{% endif %}">{{ unread_comments[0] }}</span></a></td>
             <td class="">
               <a href="{{ url_for('admin.edit', slug=post.slug) }}" class="btn primary"><i class="tiny material-icons">mode_edit</i></a>
               <a target="_blank" href="{{ url_for('posts.detail', slug=post.slug) }}" class="btn primary"><i class="tiny material-icons">visibility</i></a>
