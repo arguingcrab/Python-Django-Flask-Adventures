@@ -47,7 +47,7 @@ design(s) with
   - [ ] identify country if not local
 - [ ] change validation to be with mongoengine
 - [x] manage comments
-- [ ] redirects and 404s
+- [x] redirects and 404s
 - [ ] sort by archived and not
   - [ ] admin
   - [x] front - hidden

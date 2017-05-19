@@ -12,7 +12,7 @@ from werkzeug.datastructures import Headers
 from app import app, db
 from .auth import redirect_auth
 from .forms import LoginForm, RegisterForm
-from .models import Post, Comment, BlogPost, Video, Image, Quote, User, Session, LoginHistory
+from .models import Post, Comment, BlogPost, Video, Image, Quote, User, Session, LoginHistory, Blocked
 
 '''
 views/functions that don't require login + login/register/logout
@@ -81,16 +81,23 @@ def login():
             user_obj = User(user.username)
             if user.active:
                 try:
-                    session = Session.objects.get(user=user)
-                    session.update(set__session=os.urandom(32), set__last_login=datetime.now())
+                    blocked = Blocked.objects.get(ip=request.access_route[-1])
                 except:
-                    session = Session(user=user, ip=request.access_route[-1],session=os.urandom(32), last_login=datetime.now())
-                    session.save()
-                login_history = LoginHistory(user=user, ip=request.access_route[-1], date_time=datetime.now())
-                login_history.save()
-                login_user(user_obj)
-                flash("Logged in successfully", category='success')
-                return redirect(request.args.get("next") or url_for("admin.index"))
+                    blocked = None
+                if not blocked:
+                    try:
+                        session = Session.objects.get(user=user)
+                        session.update(set__session=os.urandom(32), set__last_login=datetime.now())
+                    except:
+                        session = Session(user=user, ip=request.access_route[-1],session=os.urandom(32), last_login=datetime.now())
+                        session.save()
+                    login_history = LoginHistory(user=user, ip=request.access_route[-1], date_time=datetime.now())
+                    login_history.save()
+                    login_user(user_obj)
+                    flash("Logged in successfully", category='success')
+                    return redirect(request.args.get("next") or url_for("admin.index"))
+                else:
+                    blocked.update(inc__attempts_since_blocked=1)
         flash("Invalid username or password", category='error')
     return render_template('login.html', title='login', form=form)
     

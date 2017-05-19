@@ -77,6 +77,13 @@ class LoginHistory(db.Document):
     ip = db.StringField(required=True)
     date_time = db.DateTimeField(required=True)
 
+
+class Blocked(db.Document):
+    ip = db.StringField(required=True)
+    date_time = db.DateTimeField(required=True)
+    attempts_since_blocked = db.IntField(default=0)
+    
+    
 class Comment(db.EmbeddedDocument):
     id = db.ObjectIdField(default=ObjectId)
     created_at = db.DateTimeField(default=datetime.now, required=True)

@@ -34,7 +34,7 @@
                   {{ form.password.errors|join(' ') }}
             {% endif %}
           </div>
-            {% if current_user.status == 'admin' %}
+            {% if current_user.status == 'admin' and current_user.username != view_user_name.username %}
               <div class="form-group">
                   <!-- <input type="checkbox" class="filled-in" id="filled-in-box" checked="checked" />{{ form.active(checked=view_user_name.active) }}
                   <label class="control-label" for="filled-in">Active</label> -->

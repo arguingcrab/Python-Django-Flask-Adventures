@@ -11,7 +11,7 @@ from werkzeug.security import generate_password_hash
 from datetime import datetime
 from app import app, login_manager
 from .forms import UserForm
-from .models import Post, Comment, BlogPost, Video, Image, Quote, User, Session, LoginHistory
+from .models import Post, Comment, BlogPost, Video, Image, Quote, User, Session, LoginHistory, Blocked
 
 '''
 views/functions that do require login/authentication
@@ -228,23 +228,33 @@ def purge(username):
 def stats(page):
     page_num = request.args.get('num', 1)
     show = request.args.get('show', 10)
+    ip = request.args.get('ip', '')
+    blocked = sessions = login_histories = None
     session_cls = Session
     login_history_cls = LoginHistory
+    blocked_cls = Blocked
+    if ip and ip != "127.0.0.1":
+        try:
+            blocked_cls.objects.get(ip=ip)
+        except:
+            blocked = blocked_cls(ip=ip, date_time=datetime.now).save()
+        flash("IP added to blocked ips")
+    
     page_type = None if not page else page
     if not page:
         sessions = session_cls.objects.limit(10).order_by('-last_login')
         login_histories = login_history_cls.objects.limit(10).order_by('-date_time')
+        blocked = blocked_cls.objects.limit(10).order_by('-date_time')
     else:
         if page == 'sessions':
-            # sessions = session_cls.objects.all()
             sessions = session_cls.objects.paginate(page=int(page_num), per_page=int(show))
-            login_histories = None
         elif page == 'history':
-            # login_histories = login_history_cls.objects.all()
             login_histories = login_history_cls.objects.paginate(page=int(page_num), per_page=int(show))
-            sessions = None
+        elif page == 'blocked':
+            sessions = login_histories = None
+            blocked = blocked_cls.objects.paginate(page=int(page_num), per_page=int(show))
     
-    return render_template('admin/stats.html', sessions=sessions, login_histories=login_histories, page_type=page_type)
+    return render_template('admin/stats.html', sessions=sessions, login_histories=login_histories, page_type=page_type, blocked=blocked)
 
 
 # register class urls (admin.index, admin.create, admin.edit)
